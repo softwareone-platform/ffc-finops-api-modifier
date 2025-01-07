@@ -3,6 +3,11 @@ from fastapi import status as http_status
 from starlette.responses import JSONResponse
 
 from app import settings
+from app.api.organizations.model import (
+    CreateOrgData,
+    OptScaleOrganization,
+    OptScaleOrganizationResponse,
+)
 from app.core.auth_jwt_bearer import JWTBearer
 from app.core.exceptions import (
     handle_exception,
@@ -10,11 +15,6 @@ from app.core.exceptions import (
 from app.optscale_api.auth_api import OptScaleAuth
 from app.optscale_api.helpers.auth_tokens_dependency import get_auth_client
 from app.optscale_api.orgs_api import OptScaleOrgAPI
-from app.organizations.model import (
-    CreateOrgData,
-    OptScaleOrganization,
-    OptScaleOrganizationResponse,
-)
 
 router = APIRouter()
 

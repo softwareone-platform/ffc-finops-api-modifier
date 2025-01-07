@@ -6,19 +6,19 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.responses import JSONResponse
 
 from app import settings
-from app.core.exceptions import (
-    InvitationDoesNotExist,
-    OptScaleAPIResponseError,
-    handle_exception,
-)
-from app.invitations.model import (
+from app.api.invitations.model import (
     DeclineInvitation,
     RegisteredInvitedUserResponse,
     RegisterInvitedUser,
 )
-from app.invitations.services.invitations import (
+from app.api.invitations.services.invitations import (
     register_invited_user_on_optscale,
     remove_user,
+)
+from app.core.exceptions import (
+    InvitationDoesNotExist,
+    OptScaleAPIResponseError,
+    handle_exception,
 )
 from app.optscale_api.invitation_api import OptScaleInvitationAPI
 from app.optscale_api.orgs_api import OptScaleOrgAPI

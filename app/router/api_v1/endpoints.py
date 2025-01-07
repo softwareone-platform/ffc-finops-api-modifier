@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from app.invitations.api import router as invitation_router
-from app.organizations.api import router as org_router
-from app.users.api import router as user_router
+from app.api.invitations.api import router as invitation_router
+from app.api.organizations.api import router as org_router
+from app.api.users.api import router as user_router
 
 api_router = APIRouter()
 
