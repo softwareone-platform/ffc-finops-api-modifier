@@ -59,6 +59,14 @@ class OptScaleAPIResponseError(Exception):
         self.reason = reason
 
 
+class CloudAccountConfigError(Exception):
+    pass
+
+
+class CloudAccountTypeError(Exception):
+    pass
+
+
 def handle_exception(error: Exception) -> NoReturn:
     """
     Handles exceptions during user creation by logging the error and raising an
