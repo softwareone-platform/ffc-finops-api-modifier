@@ -200,12 +200,13 @@
             "name": "Test2",
             "type": "azure_tenant",
             "config": {
-              "client_id": "cd945f4b-0554-4a16-9a09-96a2f30bc0ef",
-              "tenant": "1dc9b339-fadb-432e-86df-423c38a0fcb8",
-              "secret": "QOt8Q~r.ZkpDN1p2cFsYTCQFDtbB8pzzm6xxydlA"
+              "client_id": "my_client_id",
+              "tenant": "my_tenant_id",
+              "secret": "my_secret"
             },
             "auto_import": false,
-            "process_recommendations": false
+            "process_recommendations": false,
+            "org_id": "my_org_id"
           },
           "response": {
             "deleted_at": 0,
@@ -214,15 +215,15 @@
             "name": "Test2",
             "type": "azure_tenant",
             "config": {
-              "client_id": "cd945f4b-0554-4a16-9a09-96a2f30bc0ef",
-              "tenant": "1dc9b339-fadb-432e-86df-423c38a0fcb8"
+              "client_id": "my_client_id",
+              "tenant": "my_tenant_id"
             },
-            "organization_id": "3e61c772-b78a-4345-b7da-5243b09bfe03",
+            "organization_id": "my_org_id",
             "auto_import": false,
             "import_period": 1,
             "last_import_at": 0,
             "last_import_modified_at": 0,
-            "account_id": "1dc9b339-fadb-432e-86df-423c38a0fcb8",
+            "account_id": "my_account_id",
             "process_recommendations": false,
             "last_import_attempt_at": 0,
             "last_import_attempt_error": null,

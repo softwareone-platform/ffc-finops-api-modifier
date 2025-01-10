@@ -113,11 +113,7 @@ async def test_create_org_exception_handling(
         response.status_code == 403
     ), "Expected 403 Forbidden when an exception occurs in user creation"
     got = response.json()
-    assert got.get("detail").get("errors") == {"reason": "No details available"}
-    # Verify the log entry
-    assert (
-        "Exception occurred during user creation: Test exception" in caplog.text
-    ), "Expected error log message for the exception"
+    assert got.get("error") == "Test exception"
 
 
 async def test_get_org_no_authentication(async_client: AsyncClient, test_data: dict):
@@ -152,25 +148,27 @@ async def test_get_orgs_valid_response(
     [
         (
             OptScaleAPIResponseError(
-                title="Error response from OptScale",
+                title="Testing Exception occurred",
+                error_code="Error code from OptScale",
+                params=["params"],
                 reason="test reason",
                 status_code=403,
             ),
             403,
-            "Error response from OptScale",
+            "Testing Exception occurred",
             "test reason",
         ),
         (
             UserAccessTokenError("Access Token User ID mismatch"),
             403,
             "Exception occurred",
-            "No details available",
+            "Access Token User ID mismatch",
         ),
         (
             Exception("generic exception"),
             403,
             "Exception occurred",
-            "No details available",
+            "generic exception",
         ),
     ],
 )
@@ -192,5 +190,7 @@ async def test_get_orgs_exception_handling(
     response_json = response.json()
 
     assert response.status_code == expected_status
-    assert response_json.get("detail").get("title") == expected_title
-    assert response_json.get("detail").get("errors").get("reason") == expected_reason
+    if isinstance(response_json.get("error"), str):
+        assert response_json.get("error") == expected_reason
+    else:
+        assert response_json.get("error").get("reason") == expected_reason

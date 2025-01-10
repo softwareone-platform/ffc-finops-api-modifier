@@ -64,10 +64,10 @@ async def register_invited_user_on_optscale(
         return response
     except OptScaleAPIResponseError as error:
         logger.error(f"An error {error} occurred registering the invited user {email}")
-        raise
-    except InvitationDoesNotExist:
+        raise error
+    except InvitationDoesNotExist as error:
         logger.error(f"There is no invitation for this email  {email}")
-        raise
+        raise error
 
 
 async def validate_user_delete(

@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import status as http_status
-
 from app import settings
 from app.core.api_client import APIClient
-from app.core.exceptions import OptScaleAPIResponseError
+from app.core.exceptions import raise_api_response_exception
 
 from .auth_api import build_admin_api_key_header
 
@@ -53,11 +51,7 @@ class OptScaleUserAPI:
         )
         if response.get("error"):
             logger.error("Failed to create the requested user")
-            raise OptScaleAPIResponseError(
-                title="Error response from OptScale",
-                reason=response.get("data", {}).get("error", {}).get("reason", ""),
-                status_code=response.get("status_code", http_status.HTTP_403_FORBIDDEN),
-            )
+            return raise_api_response_exception(response)
         logger.info(f"User successfully created: {response}")
         return response
 
@@ -96,11 +90,7 @@ class OptScaleUserAPI:
         )
         if response.get("error"):
             logger.info(f"Failed to get the user {user_id} data from OptScale")
-            raise OptScaleAPIResponseError(
-                title="Error response from OptScale",
-                reason=response.get("data", {}).get("error", {}).get("reason", ""),
-                status_code=response.get("status_code", http_status.HTTP_404_NOT_FOUND),
-            )
+            return raise_api_response_exception(response)
         logger.info(f"User Successfully fetched : {response}")
         return response
 
@@ -119,10 +109,6 @@ class OptScaleUserAPI:
         )
         if response.get("error"):
             logger.error(f"Failed to delete the user {user_id} from OptScale")
-            raise OptScaleAPIResponseError(
-                title="Error response from OptScale",
-                reason=response.get("data", {}).get("error", {}).get("reason", ""),
-                status_code=response.get("status_code", http_status.HTTP_404_NOT_FOUND),
-            )
+            return raise_api_response_exception(response)
         logger.info(f"User {user_id} successfully deleted")
         return response
