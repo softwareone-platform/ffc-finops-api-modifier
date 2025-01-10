@@ -68,7 +68,10 @@ def mock_user_api(mocker):
         mock = AsyncMock()
         if should_raise:
             mock.delete_user.side_effect = OptScaleAPIResponseError(
-                title="Error response from OptScale", reason="Test", status_code=403
+                title="Error response from OptScale",
+                reason="Test",
+                status_code=403,
+                error_code="test error code",
             )
         else:
             mock.delete_user.return_value = None

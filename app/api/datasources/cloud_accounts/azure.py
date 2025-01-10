@@ -5,9 +5,11 @@ from app.api.datasources.cloud_accounts.cloud_config_strategy import CloudConfig
 logger = logging.getLogger(__name__)
 
 
-class AzureConfigStrategy(CloudConfigStrategy):
+class AzureCNRConfigStrategy(CloudConfigStrategy):
+    def required_fields(self) -> list:
+        return ["subscription_id", "client_id", "tenant", "secret"]
+
+
+class AzureTenantConfigStrategy(CloudConfigStrategy):
     def required_fields(self) -> list:
         return ["client_id", "tenant", "secret"]
-
-    def link_to_organization(self, config: dict, org_id: str):
-        logger.info(f"This will link the {config} to the org {org_id}")

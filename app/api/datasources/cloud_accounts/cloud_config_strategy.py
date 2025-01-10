@@ -22,19 +22,19 @@ class CloudConfigStrategy(ABC):
                 raise CloudAccountConfigError(f"The {field} is required ")
 
     @staticmethod
-    async def link_to_organization(
+    async def link_cloud_account_to_org(
         config: dict,
         org_id: str,
         user_access_token: str,
         cloud_account_api: OptScaleCloudAccountAPI,
     ):  # noqa: E501
         try:
-            response = await cloud_account_api.link_cloud_account(
+            response = await cloud_account_api.create_cloud_account_datasource(
                 user_access_token=user_access_token,  # noqa: E501
                 org_id=org_id,
                 conf=config,
             )
             return response
 
-        except OptScaleAPIResponseError as error:
-            raise OptScaleAPIResponseError from error
+        except OptScaleAPIResponseError as exception:
+            raise exception
