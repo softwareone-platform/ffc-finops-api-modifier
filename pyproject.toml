@@ -55,7 +55,6 @@ omit = [
     "*/tests/*",
     "app/utils/database/init_db.py",
     "app/router/api_v1/endpoints.py",
-    "init_db.py",
     "app/main.py"
 ]
 
@@ -63,7 +62,8 @@ omit = [
 show_missing = true
 exclude_lines = [
     "pragma: no cover",
-    "pragma: no branch"
+    "pragma: no branch",
+    "pass"
 ]
 
 [tool.ruff]

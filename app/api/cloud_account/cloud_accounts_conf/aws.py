@@ -1,6 +1,6 @@
 import logging
 
-from app.api.datasources.cloud_accounts.cloud_config_strategy import (
+from app.api.cloud_account.cloud_accounts_conf.cloud_config_strategy import (
     CloudConfigStrategy,
 )
 

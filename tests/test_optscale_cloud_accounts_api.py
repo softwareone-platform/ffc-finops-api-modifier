@@ -25,10 +25,10 @@ async def test_create_cloud_account(
     mock_api_client_post,
     test_data: dict,
 ):
-    mock_api_client_post.return_value = test_data["cloud_accounts"]["create"]["data"][
-        "azure"
-    ]["response"]  # noqa: E501
-    payload = test_data["cloud_accounts"]["create"]["data"]["azure"]["conf"]
+    mock_api_client_post.return_value = test_data["cloud_accounts_conf"]["create"][
+        "data"
+    ]["azure"]["response"]  # noqa: E501
+    payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
     response = (
         await optscale_cloud_account_api_instance.create_cloud_account_datasource(
             user_access_token="good token", org_id="ABC-101-DEF-1001", conf=payload
@@ -36,7 +36,7 @@ async def test_create_cloud_account(
     )
 
     got = response
-    want = test_data["cloud_accounts"]["create"]["data"]["azure"]["response"]
+    want = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["response"]
     for k, v in want.items():
         assert (
             got[k] == v
@@ -61,7 +61,7 @@ async def test_account_already_exists(
             "params": [],
         }
     }
-    payload = test_data["cloud_accounts"]["create"]["data"]["azure"]["conf"]
+    payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
     with caplog.at_level(logging.ERROR):
         with pytest.raises(OptScaleAPIResponseError):
             await optscale_cloud_account_api_instance.create_cloud_account_datasource(

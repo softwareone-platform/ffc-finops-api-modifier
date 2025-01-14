@@ -1,6 +1,8 @@
 import logging
 
-from app.api.datasources.cloud_accounts.cloud_config_strategy import CloudConfigStrategy
+from app.api.cloud_account.cloud_accounts_conf.cloud_config_strategy import (
+    CloudConfigStrategy,
+)
 
 logger = logging.getLogger(__name__)
 

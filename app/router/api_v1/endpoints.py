@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.datasources.api import router as datasource_router
+from app.api.cloud_account.api import router as datasource_router
 from app.api.invitations.api import router as invitation_router
 from app.api.organizations.api import router as org_router
 from app.api.users.api import router as user_router
@@ -12,7 +12,7 @@ routers = (
     (user_router, "users", "users"),
     (org_router, "organizations", "organizations"),
     (invitation_router, "invitations", "invitations"),
-    (datasource_router, "datasource", "datasource"),
+    (datasource_router, "cloud_accounts", "cloud_accounts"),
 )
 
 for router_item in routers:
