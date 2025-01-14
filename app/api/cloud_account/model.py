@@ -1,12 +1,16 @@
-from pydantic import BaseModel
+from __future__ import annotations
+
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
-class CreateDatasource(BaseModel):
+class AddCloudAccount(BaseModel):
     name: str
     type: str
-    config: dict[str, str]
-    auto_import: bool
-    process_recommendations: bool
+    config: dict[str, Any]
+    auto_import: bool = Field(default=True)
+    process_recommendations: bool = Field(default=True)
     org_id: str
     model_config = {
         "json_schema_extra": {
@@ -27,7 +31,7 @@ class CreateDatasource(BaseModel):
     }
 
 
-class DatasourceResponse(BaseModel):
+class AddCloudAccountResponse(BaseModel):
     name: str
     type: str
     model_config = {

@@ -192,7 +192,7 @@
       }
     }
   },
-  "cloud_accounts": {
+  "cloud_accounts_conf": {
     "create": {
       "data": {
         "azure": {
