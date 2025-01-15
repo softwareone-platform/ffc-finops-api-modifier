@@ -164,9 +164,7 @@ async def test_get_user_org_response_error(
         "data": {"error": {"reason": "Oh no, I made a mistake!"}},
     }
     with caplog.at_level(logging.ERROR):
-        with pytest.raises(
-            OptScaleAPIResponseError, match="Error response from OptScale"
-        ):  # noqa: PT012
+        with pytest.raises(OptScaleAPIResponseError):  # noqa: PT012
             await optscale_org_api_instance.access_user_org_list_with_admin_key(
                 user_id="test_user",
                 admin_api_key="test_key",
@@ -321,8 +319,8 @@ async def test_create_org_user_response_error(
             )
 
         exception = exc_info.value
-        assert exception.title == "Error response from OptScale"
-        assert exception.reason == "No details available"
+        assert exception.error.get("error_code") == ""
+        assert exception.error.get("reason") == "No details available"
         assert exception.status_code == 403
 
         # check the logging message printed by the create_user_org
@@ -333,7 +331,6 @@ async def test_create_org_user_response_error(
         )
         # check the logging message printed by the OptScaleAPIResponseError
         assert any(
-            "Exception occurred creating an organization on OptScale: Error response from OptScale"
-            in record.message
+            "Exception occurred creating an organization on OptScale" in record.message
             for record in caplog.records
         )

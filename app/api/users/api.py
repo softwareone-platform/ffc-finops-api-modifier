@@ -3,10 +3,10 @@ from fastapi import status as http_status
 from starlette.responses import JSONResponse
 
 from app import settings
+from app.api.users.model import CreateUserData, CreateUserResponse
 from app.core.auth_jwt_bearer import JWTBearer
-from app.core.exceptions import OptScaleAPIResponseError, handle_exception
+from app.core.exceptions import OptScaleAPIResponseError, format_error_response
 from app.optscale_api.users_api import OptScaleUserAPI
-from app.users.model import CreateUserData, CreateUserResponse
 
 router = APIRouter()
 
@@ -75,4 +75,4 @@ async def create_user(data: CreateUserData, user_api: OptScaleUserAPI = Depends(
         )
 
     except OptScaleAPIResponseError as error:
-        handle_exception(error=error)
+        return format_error_response(error)

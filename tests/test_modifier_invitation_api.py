@@ -82,7 +82,10 @@ async def test_register_invited_user_exception_handling(
 
     # Simulate an exception in `create_user`
     mock_register_invited.side_effect = OptScaleAPIResponseError(
-        title="Error response from OptScale", reason="Test Exception", status_code=403
+        title="Error response from OptScale",
+        reason="Test Exception",
+        status_code=403,
+        error_code="test error code",
     )
 
     payload = test_data["invitation"]["case_create"]["payload"]
@@ -97,12 +100,12 @@ async def test_register_invited_user_exception_handling(
         response.status_code == 403
     ), "Expected 403 Forbidden when an exception occurs in user creation"
     got = response.json()
-    assert got.get("detail").get("errors") == {"reason": "Test Exception"}
+    assert got.get("error").get("reason") == "Test Exception"
     # Verify the log entry
     assert (
-        "Exception occurred during user creation: Error response from OptScale"
-        in caplog.text
-    ), "Expected error log message for the exception"
+        "An error  occurred registering the invited user haran.banjo@email.com"
+        == caplog.messages[0]
+    )  # noqa: E501
 
 
 async def test_register_invited_user_exception_handling_invitation_not_found(
@@ -126,11 +129,7 @@ async def test_register_invited_user_exception_handling_invitation_not_found(
         response.status_code == 403
     ), "Expected 403 Forbidden when an exception occurs in user creation"
     got = response.json()
-    assert got.get("detail").get("errors") == {"reason": "No details available"}
-    # Verify the log entry
-    assert (
-        "Exception occurred during user creation: Invitation not found" in caplog.text
-    ), "Expected error log message for the exception"
+    assert got.get("error") == "Invitation not found"
 
 
 async def test_register_invited_user_exception_handling_invitation_doesnot_exist(
@@ -159,14 +158,11 @@ async def test_register_invited_user_exception_handling_invitation_doesnot_exist
         response.status_code == 403
     ), "Expected 403 Forbidden when an exception occurs in user creation"
     got = response.json()
-    assert got.get("detail").get("errors") == {"reason": "No details available"}
+    assert got.get("error") == "Test Exception"
     # Verify the log entry
     assert (
         "There is no invitation for this email  haran.banjo@email.com"
         == caplog.messages[0]
-    )
-    assert (
-        "Exception occurred during user creation: Test Exception" == caplog.messages[1]
     )
 
 
@@ -195,7 +191,10 @@ async def test_decline_invitation_handle_exception(
     mock_response = "valid_user_token"
     mock_optscale_auth_post.return_value = mock_response
     mock_decline_invitation.side_effect = OptScaleAPIResponseError(
-        title="Error response from OptScale", reason="Test Exception", status_code=403
+        title="Error response from OptScale",
+        reason="Test Exception",
+        status_code=403,
+        error_code="test error code",
     )
     jwt_token = create_jwt_token()
     with caplog.at_level(logging.ERROR):
@@ -211,9 +210,4 @@ async def test_decline_invitation_handle_exception(
         response.status_code == 403
     ), "Expected 403 Forbidden when an exception occurs in user creation"
     got = response.json()
-    assert got.get("detail").get("errors") == {"reason": "Test Exception"}
-    # Verify the log entry
-    assert (
-        "Exception occurred during user creation: Error response from OptScale"
-        in caplog.text
-    ), "Expected error log message for the exception"
+    assert got.get("error").get("reason") == "Test Exception"

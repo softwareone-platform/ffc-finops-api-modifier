@@ -191,5 +191,50 @@
         ]
       }
     }
+  },
+  "cloud_accounts_conf": {
+    "create": {
+      "data": {
+        "azure": {
+          "conf": {
+            "name": "Test2",
+            "type": "azure_tenant",
+            "config": {
+              "client_id": "my_client_id",
+              "tenant": "my_tenant_id",
+              "secret": "my_secret"
+            },
+            "auto_import": false,
+            "process_recommendations": false,
+            "org_id": "my_org_id"
+          },
+          "response": {
+            "deleted_at": 0,
+            "id": "8e8501fa-403a-477b-bd6f-e7569f277f54",
+            "created_at": 1736349441,
+            "name": "Test2",
+            "type": "azure_tenant",
+            "config": {
+              "client_id": "my_client_id",
+              "tenant": "my_tenant_id"
+            },
+            "organization_id": "my_org_id",
+            "auto_import": false,
+            "import_period": 1,
+            "last_import_at": 0,
+            "last_import_modified_at": 0,
+            "account_id": "my_account_id",
+            "process_recommendations": false,
+            "last_import_attempt_at": 0,
+            "last_import_attempt_error": null,
+            "last_getting_metrics_at": 0,
+            "last_getting_metric_attempt_at": 0,
+            "last_getting_metric_attempt_error": null,
+            "cleaned_at": 0,
+            "parent_id": null
+          }
+        }
+      }
+    }
   }
 }

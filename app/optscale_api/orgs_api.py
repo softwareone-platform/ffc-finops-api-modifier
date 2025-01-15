@@ -2,13 +2,11 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import status as http_status
-
 from app import settings
 from app.core.api_client import APIClient
 from app.core.exceptions import (
-    OptScaleAPIResponseError,
     UserAccessTokenError,
+    raise_api_response_exception,
 )
 from app.core.input_validation import validate_currency
 from app.optscale_api.auth_api import (
@@ -62,11 +60,7 @@ class OptScaleOrgAPI:
 
         if response.get("error"):
             logger.error("Failed to get the org list from OptScale")
-            raise OptScaleAPIResponseError(
-                title="Error response from OptScale",
-                reason=response.get("data", {}).get("error", {}).get("reason", ""),
-                status_code=response.get("status_code", http_status.HTTP_403_FORBIDDEN),
-            )
+            return raise_api_response_exception(response)
         logger.info(f"Successfully fetched user's org {response}")
         return response
 
@@ -177,15 +171,7 @@ class OptScaleOrgAPI:
 
             if response.get("error"):
                 logger.error(ORG_CREATION_ERROR.format(user_id))
-                raise OptScaleAPIResponseError(
-                    title="Error response from OptScale",
-                    reason=response.get("data", {})
-                    .get("error", {})
-                    .get("reason", "No details available"),  # noqa: E501
-                    status_code=response.get(
-                        "status_code", http_status.HTTP_403_FORBIDDEN
-                    ),
-                )
+                return raise_api_response_exception(response)
 
             logger.info(f"Successfully created organization for user: {user_id}")
             return response

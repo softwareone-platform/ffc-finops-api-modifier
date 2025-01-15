@@ -56,9 +56,9 @@ async def test_obtain_user_auth_token_with_admin_api_key_error_response(
                 admin_api_key="f2312f2b-46h0-4456-o0i9-58e64f2j6725",
             )
         exception = exc_info.value
-        assert exception.title == "Error response from OptScale"
-        assert exception.reason == "No details available"
-        assert exception.status_code == 503
+        assert exception.error.get("error_code") == ""
+        assert exception.error.get("reason") == "No details available"
+        assert exception.error.get("status_code") == 503
         # check the logging message printed by the obtain_user_auth_token_with_admin_api_key
         assert (
             "Failed to get an admin access token for user f0bd0c4a-7c55-45b7-8b58-27740e38789a"
