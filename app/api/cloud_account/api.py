@@ -26,9 +26,10 @@ router = APIRouter()
     response_model=AddCloudAccountResponse,
     response_model_exclude_none=True,
 )
-async def create_datasource(
+async def add_cloud_account(
     data: AddCloudAccount, user_access_token: str = Depends(get_bearer_token)
 ):
+    # Here the config as received is validated
     cloud_account_config = CloudStrategyConfiguration(
         name=data.name,
         provider_type=data.type,
@@ -37,9 +38,11 @@ async def create_datasource(
         auto_import=data.auto_import,
     )
     try:
+        # let's select the correct strategy for the given cloud account
         cloud_account_strategy = cloud_account_config.select_strategy()
         strategy_manager = CloudStrategyManager(strategy=cloud_account_strategy)
-        response = await strategy_manager.create_datasource(
+        # here the conf will be processed in order to use the OptScale API
+        response = await strategy_manager.add_cloud_account(
             config=cloud_account_config,
             org_id=data.org_id,
             user_access_token=user_access_token,
@@ -49,6 +52,6 @@ async def create_datasource(
             status_code=response.get("status_code", http_status.HTTP_201_CREATED),
             content=response.get("data", {}),
         )
-    except (OptScaleAPIResponseError, CloudAccountConfigError) as error:
+    except (OptScaleAPIResponseError, CloudAccountConfigError, ValueError) as error:
         logger.error(f"An error occurred adding the cloud account {data.type} {error}")
         return format_error_response(error)

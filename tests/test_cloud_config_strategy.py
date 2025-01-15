@@ -38,12 +38,13 @@ async def test_link_cloud_account_to_org(
         "data": test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["response"]
     }
     mock_post.return_value = mocked_response
-    strategy = TestCloudConfigStrategy()
+    strategy = TestCloudConfigStrategy(
+        optscale_cloud_account_api=optscale_cloud_account_api
+    )
     response = await strategy.link_cloud_account_to_org(
         config=payload,
         user_access_token="good token",
         org_id="my_org_id",
-        cloud_account_api=optscale_cloud_account_api,
     )
     assert response == mocked_response
 
@@ -62,18 +63,19 @@ async def test_link_cloud_account_to_org_exceptions(
     }
     mock_post.return_value = mocked_error_response
 
-    strategy = TestCloudConfigStrategy()
+    strategy = TestCloudConfigStrategy(
+        optscale_cloud_account_api=optscale_cloud_account_api
+    )
     with pytest.raises(OptScaleAPIResponseError):
         await strategy.link_cloud_account_to_org(
-            config=payload,
-            user_access_token="good token",
-            org_id="my_org_id",
-            cloud_account_api=optscale_cloud_account_api,
+            config=payload, user_access_token="good token", org_id="my_org_id"
         )
 
 
 def test_required_fields():
-    strategy = TestCloudConfigStrategy()
+    strategy = TestCloudConfigStrategy(
+        optscale_cloud_account_api=OptScaleCloudAccountAPI()
+    )
     fields = strategy.required_fields()
     assert isinstance(fields, list)
     assert fields == ["field1", "field2", "field3"]

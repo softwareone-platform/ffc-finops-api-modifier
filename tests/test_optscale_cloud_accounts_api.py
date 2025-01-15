@@ -29,10 +29,8 @@ async def test_create_cloud_account(
         "data"
     ]["azure"]["response"]  # noqa: E501
     payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
-    response = (
-        await optscale_cloud_account_api_instance.create_cloud_account_datasource(
-            user_access_token="good token", org_id="ABC-101-DEF-1001", conf=payload
-        )
+    response = await optscale_cloud_account_api_instance.link_cloud_account_with_org(
+        user_access_token="good token", org_id="ABC-101-DEF-1001", conf=payload
     )
 
     got = response
@@ -64,6 +62,6 @@ async def test_account_already_exists(
     payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
     with caplog.at_level(logging.ERROR):
         with pytest.raises(OptScaleAPIResponseError):
-            await optscale_cloud_account_api_instance.create_cloud_account_datasource(
+            await optscale_cloud_account_api_instance.link_cloud_account_with_org(
                 user_access_token="good token", org_id="ABC-101-DEF-1001", conf=payload
             )

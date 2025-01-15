@@ -11,8 +11,8 @@ from app.core.exceptions import OptScaleAPIResponseError
 
 
 @pytest.fixture
-def mock_create_datasource():
-    patcher = patch.object(CloudStrategyManager, "create_datasource", new=AsyncMock())
+def mock_add_cloud_account():
+    patcher = patch.object(CloudStrategyManager, "add_cloud_account", new=AsyncMock())
     mock = patcher.start()
     yield mock
     patcher.stop()
@@ -21,14 +21,14 @@ def mock_create_datasource():
 async def test_create_datasource(
     async_client: AsyncClient,
     test_data: dict,
-    mock_create_datasource,
+    mock_add_cloud_account,
 ):
     payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
     mocked_response = {
         "data": test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["response"]
     }
     want = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["response"]
-    mock_create_datasource.return_value = mocked_response
+    mock_add_cloud_account.return_value = mocked_response
 
     response = await async_client.post(
         "/cloud_accounts", json=payload, headers={"Authorization": "Bearer good token"}
@@ -44,14 +44,14 @@ async def test_create_datasource(
 async def test_create_datasource_with_inject_conf(
     async_client: AsyncClient,
     test_data: dict,
-    mock_create_datasource,
+    mock_add_cloud_account,
 ):
     payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
     mocked_response = {
         "data": test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["response"]
     }
     want = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["response"]
-    mock_create_datasource.return_value = mocked_response
+    mock_add_cloud_account.return_value = mocked_response
 
     response = await async_client.post(
         "/cloud_accounts", json=payload, headers={"Authorization": "Bearer good token"}
@@ -68,7 +68,7 @@ async def test_not_allowed_datasource_exception_handling(
     async_client: AsyncClient,
     test_data: dict,
     caplog,
-    mock_create_datasource,
+    mock_add_cloud_account,
 ):
     payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
     payload["type"] = "blalbla"
@@ -85,9 +85,9 @@ async def test_exception_handling(
     async_client: AsyncClient,
     test_data: dict,
     caplog,
-    mock_create_datasource,
+    mock_add_cloud_account,
 ):
-    mock_create_datasource.side_effect = OptScaleAPIResponseError(
+    mock_add_cloud_account.side_effect = OptScaleAPIResponseError(
         title="Error response from OptScale",
         reason="Test Exception",
         status_code=403,
