@@ -108,3 +108,25 @@ async def test_exception_handling(
             "An error occurred adding the cloud account azure_tenant "
             == caplog.messages[0]
         )
+
+
+async def test_no_auth(
+    async_client: AsyncClient,
+    test_data: dict,
+    caplog,
+    mock_add_cloud_account,
+):
+    mock_add_cloud_account.side_effect = OptScaleAPIResponseError(
+        title="Error response from OptScale",
+        reason="Test Exception",
+        status_code=403,
+        error_code="test error code",
+    )
+    payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
+    with caplog.at_level(logging.ERROR):
+        response = await async_client.post(
+            "/cloud_accounts",
+            json=payload,
+            headers={},
+        )
+        assert response.status_code == 403
