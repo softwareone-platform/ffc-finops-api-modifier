@@ -46,7 +46,7 @@ class CloudStrategyConfiguration:
 
     def select_strategy(self):
         """
-        This method checkes if the Cloud Account type is allowed.
+        This method checks if the Cloud Account type is allowed.
         If it's valid, an instance of the Cloud Account Class's Strategy
         will be created and validated.
         :return:
@@ -62,15 +62,14 @@ class CloudStrategyConfiguration:
             )
 
         strategy_class = self.ALLOWED_PROVIDERS[self.type]
-        strategy = strategy_class()
-        try:
-            strategy.validate_config(config=self.config)
-            return strategy
-        except CloudAccountConfigError as exception:
-            raise exception
+        strategy = strategy_class(optscale_cloud_account_api=OptScaleCloudAccountAPI())
+        strategy.validate_config(config=self.config)
+        cloud_account_type = self.config.get("type")
+        logger.info(f"Cloud Account Conf for {cloud_account_type} has been validated")
+        return strategy
 
 
-async def build_datasource_conf(
+async def build_payload_dict(
     config: CloudStrategyConfiguration, required_fields: dict | None = None
 ):
     """
@@ -95,24 +94,23 @@ async def build_datasource_conf(
             "auto_import",
             "process_recommendations",
         }
-    datasource_conf = {
+    cloud_account_payload = {
         key: value for key, value in config.__dict__.items() if key in required_fields
     }
     # Ensure all required fields are present
-    missing_fields = required_fields - datasource_conf.keys()
-    return datasource_conf, missing_fields
+    missing_fields = required_fields - cloud_account_payload.keys()
+    return cloud_account_payload, missing_fields
 
 
 class CloudStrategyManager:
     def __init__(self, strategy: CloudConfigStrategy):
         self.strategy = strategy
-        self.cloud_account_api = OptScaleCloudAccountAPI()
 
-    async def create_datasource(
+    async def add_cloud_account(
         self, config: CloudStrategyConfiguration, org_id: str, user_access_token: str
     ):
         """
-        Creates a DataSource by linking the given Cloud Account Configuration with
+        Link the given Cloud Account Configuration with
         the user's organization.
 
         :param config: An instance of CloudStrategyConfiguration with the chosen Cloud Account
@@ -146,26 +144,25 @@ class CloudStrategyManager:
             "parent_id": null
           }
           raises: ValueError if the previously built CloudStrategyConfiguration is tampered.
-          OptScaleAPIResponseError if an error occurred during the communication with the
+          Rethrow OptScaleAPIResponseError if an error occurred during the communication with the
           OptScale API.
         """
         if not isinstance(config, CloudStrategyConfiguration):
             raise CloudAccountConfigError
-        datasource_conf, missing_fields = await build_datasource_conf(config)
+
+        cloud_account_payload, missing_fields = await build_payload_dict(config)
         if missing_fields:
             logger.error(
                 "Something has been altered in the CloudStrategyConfiguration."
-                "There are missing required fields in the DataSource Conf: {missing_fields}"
+                "There are missing required fields in the Cloud Account Conf: {missing_fields}"
             )  # noqa: E501
             raise ValueError(
-                f"Missing required fields in the DataSource Conf: {missing_fields}"
+                f"Missing required fields in the Cloud Account Conf: {missing_fields}"
             )
-        try:
-            return await self.strategy.link_cloud_account_to_org(
-                config=datasource_conf,
-                org_id=org_id,
-                user_access_token=user_access_token,
-                cloud_account_api=self.cloud_account_api,
-            )
-        except OptScaleAPIResponseError as exception:
-            raise exception
+
+        response = await self.strategy.link_cloud_account_to_org(
+            config=cloud_account_payload,
+            org_id=org_id,
+            user_access_token=user_access_token,
+        )
+        return response

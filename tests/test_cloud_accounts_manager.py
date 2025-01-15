@@ -16,6 +16,7 @@ from app.api.cloud_account.cloud_accounts_manager import (
     CloudStrategyManager,
 )
 from app.core.exceptions import CloudAccountConfigError, OptScaleAPIResponseError
+from app.optscale_api.cloud_accounts import OptScaleCloudAccountAPI
 
 
 class TestCloudConfigStrategy(CloudConfigStrategy):
@@ -26,7 +27,11 @@ class TestCloudConfigStrategy(CloudConfigStrategy):
 @pytest.fixture
 def optscale_cloud_strategy_manager_api():
     """Provides a clean instance of CloudConfigStrategy for each test."""
-    return CloudStrategyManager(strategy=TestCloudConfigStrategy())
+    return CloudStrategyManager(
+        strategy=TestCloudConfigStrategy(
+            optscale_cloud_account_api=OptScaleCloudAccountAPI()
+        )
+    )  # noqa: E501
 
 
 @pytest.fixture
@@ -226,7 +231,7 @@ async def test_create_datasource(
         "data": test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["response"]
     }
     mock_link_cloud_account_to_org.return_value = mocked_response
-    response = await optscale_cloud_strategy_manager_api.create_datasource(
+    response = await optscale_cloud_strategy_manager_api.add_cloud_account(
         config=aws_config, org_id="my_org", user_access_token="good token"
     )
     assert response == mocked_response
@@ -242,8 +247,9 @@ async def test_exception_on_cloud_strategy_manager(
     )
     aws_strategy = aws_config.select_strategy()
     aws_manager = CloudStrategyManager(strategy=aws_strategy)
+
     with pytest.raises(CloudAccountConfigError):
-        await aws_manager.create_datasource(
+        await aws_manager.add_cloud_account(
             config=None, org_id="my_org_id", user_access_token="good token"
         )
 
@@ -257,7 +263,7 @@ async def test_exception_on_cloud_strategy_manager(
     }
     mock_link_cloud_account_to_org.return_value = mocked_error_response
     with pytest.raises(OptScaleAPIResponseError):
-        await aws_manager.create_datasource(
+        await aws_manager.add_cloud_account(
             config=aws_config, org_id="my_org_id", user_access_token="good token"
         )
 
@@ -275,8 +281,8 @@ async def test_inject_value_in_valid_conf(
     # let's modify something
     del aws_config.name
     with pytest.raises(
-        ValueError, match="Missing required fields in the DataSource Conf: {'name'}"
+        ValueError, match="Missing required fields in the Cloud Account Conf: {'name'}"
     ):
-        await optscale_cloud_strategy_manager_api.create_datasource(
+        await optscale_cloud_strategy_manager_api.add_cloud_account(
             config=aws_config, org_id="my_org_id", user_access_token="good token"
         )
