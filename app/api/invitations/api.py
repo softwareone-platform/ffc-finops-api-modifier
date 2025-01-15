@@ -6,19 +6,19 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.responses import JSONResponse
 
 from app import settings
-from app.core.exceptions import (
-    InvitationDoesNotExist,
-    OptScaleAPIResponseError,
-    handle_exception,
-)
-from app.invitations.model import (
+from app.api.invitations.model import (
     DeclineInvitation,
     RegisteredInvitedUserResponse,
     RegisterInvitedUser,
 )
-from app.invitations.services.invitations import (
+from app.api.invitations.services.invitations import (
     register_invited_user_on_optscale,
     remove_user,
+)
+from app.core.exceptions import (
+    InvitationDoesNotExist,
+    OptScaleAPIResponseError,
+    format_error_response,
 )
 from app.optscale_api.invitation_api import OptScaleInvitationAPI
 from app.optscale_api.orgs_api import OptScaleOrgAPI
@@ -62,7 +62,7 @@ async def register_invited(
         )
 
     except (OptScaleAPIResponseError, InvitationDoesNotExist) as error:
-        handle_exception(error=error)
+        return format_error_response(error)
 
 
 @router.post(
@@ -98,4 +98,4 @@ async def decline_invitation(
             content={"response": "Invitation declined"},
         )
     except OptScaleAPIResponseError as error:
-        handle_exception(error=error)
+        return format_error_response(error)

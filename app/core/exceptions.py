@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import logging
-from typing import NoReturn
 
-from fastapi import status as http_status
-
-from app.core.error_formats import create_error_response
+from starlette import status as http_status
+from starlette.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
 
@@ -34,47 +32,67 @@ class InvitationDoesNotExist(Exception):
     pass
 
 
+class CloudAccountConfigError(Exception):
+    pass
+
+
 class OptScaleAPIResponseError(Exception):
     """
-    Custom exception class for handling errors in the OptScale API responses.
-
     Attributes:
         status_code (int): The HTTP status code of the API response.
         title (str): A short title describing the error.
         reason (str): A detailed reason explaining the cause of the error.
+        error_code (str) : A specific error code as returned from OptScale
     """
 
-    def __init__(self, status_code: int, title: str, reason: str):
-        """
-        Initializes the exception with the given status code, title, and reason.
-
-        :param status_code: The HTTP status code of the API response.
-        :param title: A short title describing the error.
-        :param reason: A detailed reason explaining the cause of the error.
-        """
-        message = f"{title}"
-        super().__init__(message)
+    def __init__(
+        self,
+        status_code: int,
+        reason: str,
+        error_code: str,
+        title: str = None,
+        params: list = None,
+    ):  # noqa: E501
+        if params is None:
+            params = []
         self.status_code = status_code
         self.title = title
-        self.reason = reason
+        self.error = {
+            "status_code": status_code,
+            "reason": reason,
+            "error_code": error_code,
+            "params": params,
+        }
 
 
-def handle_exception(error: Exception) -> NoReturn:
+def format_error_response(error):
+    if hasattr(error, "status_code"):
+        status_code = error.status_code
+    else:
+        status_code = http_status.HTTP_403_FORBIDDEN
+    if hasattr(error, "error"):
+        error_payload = error.error
+    else:
+        error_payload = str(error)
+    return JSONResponse(
+        status_code=status_code,
+        content={"error": error_payload},
+    )
+
+
+def raise_api_response_exception(response):
     """
-    Handles exceptions during user creation by logging the error and raising an
-    appropriate HTTP response.
 
-    :param error: error (Exception): The exception to handle.
-    Raises:
-        Exception: Raises a HTTPException exception with custom details of the exception.
-
-    Returns:
-        NoReturn: This function does not return; it always raises an exception.
+    :param response:
+    :type response:
+    :return:
+    :rtype:
     """
-    logger.error(f"Exception occurred during user creation: {error}")
-    error = error.__dict__
-    raise create_error_response(
-        status_code=error.get("status_code", http_status.HTTP_403_FORBIDDEN),
-        title=error.get("title", "Exception occurred"),
-        errors={"reason": error.get("reason", "No details available")},
+    error_payload = response.get("data", {}).get("error", {})
+    raise OptScaleAPIResponseError(
+        title=error_payload.get("title", "OptScale API ERROR"),
+        error_code=error_payload.get("error_code", ""),
+        params=error_payload.get("params", []),
+        reason=error_payload.get("reason", "No details available"),
+        status_code=response.get("status_code", http_status.HTTP_403_FORBIDDEN),
     )

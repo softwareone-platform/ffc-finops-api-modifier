@@ -88,7 +88,7 @@ async def test_create_user_exception_handling(
 ):
     # Simulate an exception in `create_user`
     mock_create_user.side_effect = OptScaleAPIResponseError(
-        title="Error response from OptScale", reason="Test Exception", status_code=403
+        error_code="Error code from OptScale", reason="Test Exception", status_code=403
     )
 
     payload = test_data["user"]["case_create"]["payload"]
@@ -106,9 +106,4 @@ async def test_create_user_exception_handling(
         response.status_code == 403
     ), "Expected 403 Forbidden when an exception occurs in user creation"
     got = response.json()
-    assert got.get("detail").get("errors") == {"reason": "Test Exception"}
-    # Verify the log entry
-    assert (
-        "Exception occurred during user creation: Error response from OptScale"
-        in caplog.text
-    ), "Expected error log message for the exception"
+    assert got.get("error").get("reason") == "Test Exception"

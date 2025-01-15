@@ -6,7 +6,7 @@ from fastapi import status as http_status
 
 from app import settings
 from app.core.api_client import APIClient
-from app.core.exceptions import OptScaleAPIResponseError
+from app.core.exceptions import OptScaleAPIResponseError, raise_api_response_exception
 from app.optscale_api.auth_api import (
     build_admin_api_key_header,
     build_bearer_token_header,
@@ -38,11 +38,7 @@ class OptScaleInvitationAPI:
         )
         if response.get("error"):
             logger.error("Failed to decline the invitation.")
-            raise OptScaleAPIResponseError(
-                title="Error response from OptScale",
-                reason=response.get("data", {}).get("error", {}).get("reason", ""),
-                status_code=response.get("status_code", http_status.HTTP_403_FORBIDDEN),
-            )
+            return raise_api_response_exception(response)
         logger.info(f"Invitation {invitation_id} has been declined")
         return {}
 
@@ -101,9 +97,12 @@ class OptScaleInvitationAPI:
         )
         if response.get("error"):
             logger.error("Failed to get list of invitations.")
+            error_payload = response.get("data", {}).get("error", {})
             raise OptScaleAPIResponseError(
-                title="Error response from OptScale",
-                reason=response.get("data", {}).get("error", {}).get("reason", ""),
+                title=error_payload.get("title", "OptScale API ERROR"),
+                error_code=error_payload.get("error_code"),
+                params=error_payload.get("params"),
+                reason=error_payload.get("reason", ""),
                 status_code=response.get("status_code", http_status.HTTP_403_FORBIDDEN),
             )
         return response
