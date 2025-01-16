@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     audience: str
     opt_scale_api_url: str
     admin_token: str
-    api_v1_prefix: str = "/v1/admin"
+    api_v1_prefix: str = "/modifier/v1"
     debug: bool = False
     project_name: str = "CloudSpend API Modifier"
     description: str = "Service to provide custom users and org management"
