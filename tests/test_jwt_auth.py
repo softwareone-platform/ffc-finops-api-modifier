@@ -3,7 +3,6 @@ import time
 
 import jwt
 import pytest
-from fastapi import HTTPException
 
 from app import settings
 from app.core.auth_jwt_bearer import JWTBearer, decode_jwt, verify_jwt
@@ -199,30 +198,28 @@ class TestJWTBearer:
         jwt_bearer = JWTBearer(auto_error=False)
         request = MockRequest(authorization=f"Bearer {token}")
         credentials = await jwt_bearer(request)
-        assert credentials == token
+        access_token = credentials.get("access_token")
+        assert access_token == token
 
     async def test_invalid_scheme(self):
         token = create_jwt_token(subject=SUBJECT)
         jwt_bearer = JWTBearer(auto_error=False)
         request = MockRequest(authorization=f"Basic {token}")
-        with pytest.raises(HTTPException) as exc_info:
-            await jwt_bearer(request)
-        assert exc_info.value.status_code == 401
-        assert exc_info.value.detail["title"] == "Invalid authorization scheme."
+        response = await jwt_bearer(request)
+        assert response.get("error") == "Authentication failed."
+        assert response.get("reason") == "Invalid authorization scheme."
 
     async def test_invalid_token(self):
         invalid_token = "invalid.token.here"
         jwt_bearer = JWTBearer(auto_error=False)
         request = MockRequest(authorization=f"Bearer {invalid_token}")
-        with pytest.raises(HTTPException) as exc_info:
-            await jwt_bearer(request)
-        assert exc_info.value.status_code == 401
-        assert exc_info.value.detail["title"] == "Invalid token or expired token."
+        response = await jwt_bearer(request)
+        assert response.get("error") == "Authentication failed."
+        assert response.get("reason") == "The token is invalid or has expired."
 
     async def test_missing_authorization(self):
         jwt_bearer = JWTBearer(auto_error=False)
         request = MockRequest()
-        with pytest.raises(HTTPException) as exc_info:
-            await jwt_bearer(request)
-        assert exc_info.value.status_code == 401
-        assert exc_info.value.detail["title"] == "Invalid authorization scheme."
+        response = await jwt_bearer(request)
+        assert response.get("error") == "Authentication not provided"
+        assert response.get("reason") == "No Authentication in the Headers"

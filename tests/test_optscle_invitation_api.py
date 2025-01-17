@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 import pytest
 from httpx import AsyncClient
 
-from app.core.exceptions import OptScaleAPIResponseError
+from app.core.exceptions import APIResponseError
 from app.optscale_api.invitation_api import OptScaleInvitationAPI
 
 INVITATION_ENDPOINT = "/restapi/v2/invites"
@@ -65,7 +65,7 @@ async def test_decline_invitation_using_not_valid_invitation(
         }
     }
     mock_patch.return_value = mock_response
-    with pytest.raises(OptScaleAPIResponseError):  # noqa: PT012
+    with pytest.raises(APIResponseError):  # noqa: PT012
         await opt_scale_invitation.decline_invitation(
             user_access_token="valid user token",
             invitation_id="db540aac-451f-4288-b7b3-53e60e0a3653",
@@ -116,7 +116,7 @@ async def test_get_list_of_invitations_error(
     }
     mock_get.return_value = mock_response
     with caplog.at_level(logging.ERROR):
-        with pytest.raises(OptScaleAPIResponseError):  # noqa: PT012
+        with pytest.raises(APIResponseError):  # noqa: PT012
             await opt_scale_invitation.get_list_of_invitations(
                 user_access_token="user_token"
             )

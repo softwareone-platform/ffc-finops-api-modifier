@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from app.api.invitations.services.invitations import remove_user, validate_user_delete
-from app.core.exceptions import OptScaleAPIResponseError
+from app.core.exceptions import APIResponseError
 from app.optscale_api.users_api import OptScaleUserAPI
 
 USER_ID = "f0bd0c4a-7c55-45b7-8b58-27740e38789a"
@@ -67,7 +67,7 @@ def mock_user_api(mocker):
     def _mock_user_api(should_raise=False):
         mock = AsyncMock()
         if should_raise:
-            mock.delete_user.side_effect = OptScaleAPIResponseError(
+            mock.delete_user.side_effect = APIResponseError(
                 title="Error response from OptScale",
                 reason="Test",
                 status_code=403,
@@ -105,7 +105,7 @@ async def test_create_duplicate_user(caplog, optscale_api, test_data: dict, mock
     mock_post.return_value = mock_response
     with caplog.at_level(logging.ERROR):
         with pytest.raises(  # noqa: PT012
-            OptScaleAPIResponseError, match=""
+            APIResponseError, match=""
         ):
             await optscale_api.create_user(
                 email=EMAIL,

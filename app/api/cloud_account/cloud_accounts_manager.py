@@ -14,8 +14,8 @@ from app.api.cloud_account.cloud_accounts_conf.cloud_config_strategy import (
 )
 from app.api.cloud_account.cloud_accounts_conf.gcp import GCPCNRConfigStrategy
 from app.core.exceptions import (
+    APIResponseError,
     CloudAccountConfigError,
-    OptScaleAPIResponseError,
 )
 from app.optscale_api.cloud_accounts import OptScaleCloudAccountAPI
 
@@ -53,7 +53,7 @@ class CloudStrategyConfiguration:
         :rtype:
         """
         if self.type not in self.ALLOWED_PROVIDERS:
-            raise OptScaleAPIResponseError(
+            raise APIResponseError(
                 title="Wrong Cloud Account",
                 error_code="OE0436",
                 reason=f"{self.type} is not supported",
@@ -144,7 +144,7 @@ class CloudStrategyManager:
             "parent_id": null
           }
           raises: ValueError if the previously built CloudStrategyConfiguration is tampered.
-          Rethrow OptScaleAPIResponseError if an error occurred during the communication with the
+          Rethrow APIResponseError if an error occurred during the communication with the
           OptScale API.
         """
         if not isinstance(config, CloudStrategyConfiguration):

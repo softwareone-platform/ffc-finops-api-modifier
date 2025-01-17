@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.core.exceptions import OptScaleAPIResponseError
+from app.core.exceptions import APIResponseError
 from app.optscale_api.users_api import OptScaleUserAPI
 
 USER_ID = "f0bd0c4a-7c55-45b7-8b58-27740e38789a"
@@ -79,7 +79,7 @@ async def test_create_duplicate_user(caplog, optscale_api, mock_post, test_data:
     mock_post.return_value = mock_response
     with caplog.at_level(logging.ERROR):
         with pytest.raises(  # noqa: PT012
-            OptScaleAPIResponseError, match=""
+            APIResponseError, match=""
         ):
             await optscale_api.create_user(
                 email=EMAIL,
@@ -132,7 +132,7 @@ async def test_invalid_get_user_by_id(optscale_api, mock_get, user_id=INVALID_US
     }
 
     mock_get.return_value = mock_response
-    with pytest.raises(OptScaleAPIResponseError, match=""):  # noqa: PT012
+    with pytest.raises(APIResponseError, match=""):  # noqa: PT012
         await optscale_api.get_user_by_id(user_id=user_id, admin_api_key=ADMIN_API_KEY)
         mock_get.assert_called_once_with(
             endpoint=f"/auth/v2/users/{user_id}", headers={"Secret": ADMIN_API_KEY}
@@ -150,7 +150,7 @@ async def test_get_user_with_invalid_admin_api_key(optscale_api, mock_get):
     }
     mock_get.return_value = mock_response
 
-    with pytest.raises(OptScaleAPIResponseError, match=""):  # noqa: PT012
+    with pytest.raises(APIResponseError, match=""):  # noqa: PT012
         await optscale_api.get_user_by_id(user_id=USER_ID, admin_api_key="invalid_key")
 
         mock_get.assert_called_once_with(
@@ -179,6 +179,6 @@ async def test_delete_user_exception_handling(optscale_api, mock_delete, caplog)
     }
     mock_delete.return_value = mock_response
     with caplog.at_level(logging.ERROR):
-        with pytest.raises(OptScaleAPIResponseError):
+        with pytest.raises(APIResponseError):
             await optscale_api.delete_user(user_id="user_id", admin_api_key="test_key")
         assert "Failed to delete the user user_id from OptScale" == caplog.messages[0]
