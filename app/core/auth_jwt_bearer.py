@@ -3,7 +3,6 @@ from typing import Optional
 
 import jwt
 from fastapi import Request
-from fastapi import status as http_status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt.exceptions import (
     DecodeError,
@@ -13,7 +12,7 @@ from jwt.exceptions import (
 )
 
 from app import settings
-from app.core.error_formats import create_error_response
+from app.core.exceptions import APIResponseError
 
 JWT_SECRET = settings.secret
 JWT_ALGORITHM = settings.algorithm
@@ -79,6 +78,19 @@ def verify_jwt(jw_token: str) -> bool:
     return is_token_valid
 
 
+def handle_jwt_dependency(jwt_payload: dict):
+    if jwt_payload.get("error"):
+        raise APIResponseError(
+            title=jwt_payload.get("error"),
+            error_code="",
+            params=[],
+            reason=jwt_payload.get("reason"),
+            status_code=401,
+        )
+    else:
+        return jwt_payload.get("access_token")
+
+
 class JWTBearer(HTTPBearer):
     def __init__(self, auto_error: bool = False):
         """
@@ -92,19 +104,28 @@ class JWTBearer(HTTPBearer):
         super().__init__(auto_error=auto_error)
 
     async def __call__(self, request: Request):
+        headers = request.headers
+        authorization = headers.get("Authorization")
+        if authorization is None:
+            # Note: This is a Special case to address the users invitation flow
+            # with no Authentication
+            return {
+                "error": "Authentication not provided",
+                "reason": "No Authentication in the Headers",
+            }
+
         credentials: HTTPAuthorizationCredentials = await super().__call__(request)
         if credentials:
+            # The token is expired or not valid
             if not verify_jwt(credentials.credentials):
-                raise create_error_response(
-                    status_code=http_status.HTTP_401_UNAUTHORIZED,
-                    title="Invalid token or expired token.",
-                    errors={"reason": "The token is invalid or has expired."},
-                )
-            return credentials.credentials
+                return {
+                    "error": "Authentication failed.",
+                    "reason": "The token is invalid or has expired.",
+                }
+            return {"access_token": credentials.credentials}
         else:
             # The authentication schema is not Bearer
-            raise create_error_response(
-                status_code=http_status.HTTP_401_UNAUTHORIZED,
-                title="Invalid authorization scheme.",
-                errors={"reason": "Invalid authorization scheme."},
-            )
+            return {
+                "error": "Authentication failed.",
+                "reason": "Invalid authorization scheme.",
+            }

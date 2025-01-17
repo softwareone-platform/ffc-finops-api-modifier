@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import AsyncClient
 
-from app.core.exceptions import OptScaleAPIResponseError
+from app.core.exceptions import APIResponseError
 from app.optscale_api.users_api import OptScaleUserAPI
 from tests.helpers.jwt import create_jwt_token
 
@@ -15,21 +15,6 @@ def mock_create_user():
     mock = patcher.start()
     yield mock
     patcher.stop()
-
-
-async def test_create_user_no_authentication(
-    async_client: AsyncClient, test_data: dict
-):
-    payload = test_data["user"]["case_create"]["payload"]
-    response = await async_client.post("/users", json=payload)
-    assert (
-        response.status_code == 401
-    ), "Expected 401 when no authentication is provided"
-    got = response.json()
-    assert (
-        got.get("detail").get("errors").get("reason") == "Invalid authorization scheme."
-    )
-    assert "traceId" in got.get("detail")
 
 
 @pytest.mark.parametrize(
@@ -87,7 +72,7 @@ async def test_create_user_exception_handling(
     async_client: AsyncClient, test_data: dict, mock_create_user, caplog
 ):
     # Simulate an exception in `create_user`
-    mock_create_user.side_effect = OptScaleAPIResponseError(
+    mock_create_user.side_effect = APIResponseError(
         error_code="Error code from OptScale", reason="Test Exception", status_code=403
     )
 

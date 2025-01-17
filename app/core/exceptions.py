@@ -36,7 +36,7 @@ class CloudAccountConfigError(Exception):
     pass
 
 
-class OptScaleAPIResponseError(Exception):
+class APIResponseError(Exception):
     """
     Attributes:
         status_code (int): The HTTP status code of the API response.
@@ -89,7 +89,7 @@ def raise_api_response_exception(response):
     :rtype:
     """
     error_payload = response.get("data", {}).get("error", {})
-    raise OptScaleAPIResponseError(
+    raise APIResponseError(
         title=error_payload.get("title", "OptScale API ERROR"),
         error_code=error_payload.get("error_code", ""),
         params=error_payload.get("params", []),

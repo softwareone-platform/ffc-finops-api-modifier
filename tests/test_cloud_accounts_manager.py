@@ -15,7 +15,7 @@ from app.api.cloud_account.cloud_accounts_manager import (
     CloudStrategyConfiguration,
     CloudStrategyManager,
 )
-from app.core.exceptions import CloudAccountConfigError, OptScaleAPIResponseError
+from app.core.exceptions import APIResponseError, CloudAccountConfigError
 from app.optscale_api.cloud_accounts import OptScaleCloudAccountAPI
 
 
@@ -203,7 +203,7 @@ def test_passing_not_allowed_cloud_type():
         provider_type="xxxxx",
         config={"access_key_id": "ciao", "secret_access_key": "cckkckdkkdskd"},
     )
-    with pytest.raises(OptScaleAPIResponseError):
+    with pytest.raises(APIResponseError):
         aws_config.select_strategy()
 
 
@@ -262,7 +262,7 @@ async def test_exception_on_cloud_strategy_manager(
         }
     }
     mock_link_cloud_account_to_org.return_value = mocked_error_response
-    with pytest.raises(OptScaleAPIResponseError):
+    with pytest.raises(APIResponseError):
         await aws_manager.add_cloud_account(
             config=aws_config, org_id="my_org_id", user_access_token="good token"
         )

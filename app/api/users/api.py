@@ -1,11 +1,18 @@
+from __future__ import annotations
+
 from fastapi import APIRouter, Depends
 from fastapi import status as http_status
 from starlette.responses import JSONResponse
 
 from app import settings
 from app.api.users.model import CreateUserData, CreateUserResponse
-from app.core.auth_jwt_bearer import JWTBearer
-from app.core.exceptions import OptScaleAPIResponseError, format_error_response
+from app.core.auth_jwt_bearer import JWTBearer, handle_jwt_dependency
+from app.core.exceptions import (
+    APIResponseError,
+    InvitationDoesNotExist,
+    UserAccessTokenError,
+    format_error_response,
+)
 from app.optscale_api.users_api import OptScaleUserAPI
 
 router = APIRouter()
@@ -15,14 +22,25 @@ router = APIRouter()
     path="",
     status_code=http_status.HTTP_201_CREATED,
     response_model=CreateUserResponse,
-    dependencies=[Depends(JWTBearer())],
+    dependencies=[],
 )
-async def create_user(data: CreateUserData, user_api: OptScaleUserAPI = Depends()):
+async def create_user(
+    data: CreateUserData,
+    user_api: OptScaleUserAPI = Depends(),
+    jwt_payload: dict = Depends(JWTBearer()),
+):
     """
-    Create a FinOps user
-    This endpoint allows the creation of a new user by interacting with the OptScale API.
+    This endpoint registers users in OptScale.
+    It can be consumed in two ways:
+    1. If a JWT Token is provided, the user will be created and verified.
+    2. IF no Authentication is provided, the given user will be created ONLY
+        if an invitation exists with the provided email address. If an invitation exists,
+        the user will be created but not auto-verified. The user has to perform
+        the verification action.
+
     It returns the created user's details.
 
+    :param jwt_payload: A dictionary that will contain the access token or an error
     :param data: The input data required to create a user.
     :param user_api: An instance of OptScaleOrgAPI for managing organization operations.
                     Dependency injection via `Depends()`.
@@ -62,17 +80,44 @@ async def create_user(data: CreateUserData, user_api: OptScaleUserAPI = Depends(
         JWTBearer: Ensures that the request is authenticated using a valid JWT.
     """
     try:
+        auto_verified, check_user_email = await process_authentication_info(jwt_payload)
+
         response = await user_api.create_user(
             email=str(data.email),
             display_name=data.display_name,
             password=data.password,
             admin_api_key=settings.admin_token,
-            verified=True,
+            verified=auto_verified,
+            check_user_email=check_user_email,
         )
         return JSONResponse(
             status_code=response.get("status_code", http_status.HTTP_201_CREATED),
             content=response.get("data", {}),
         )
 
-    except OptScaleAPIResponseError as error:
+    except (
+        APIResponseError,
+        UserAccessTokenError,
+        InvitationDoesNotExist,
+    ) as error:
         return format_error_response(error)
+
+
+async def process_authentication_info(jwt_payload: dict):
+    """
+
+
+    :param jwt_payload: jwt_payload is a dict with the result of calling the JWTBearer class.
+    :return: Bool or raise an APIResponseError if the token is not valid
+    """
+    check_user_email = False
+    auto_verified = True
+    if jwt_payload.get("error"):
+        if jwt_payload.get("error") == "Authentication not provided":
+            # Try to see if the user has been invited to the platform
+            check_user_email = True
+            auto_verified = False
+        else:
+            # The token provided is not valid. APIResponseError
+            handle_jwt_dependency(jwt_payload)
+    return auto_verified, check_user_email

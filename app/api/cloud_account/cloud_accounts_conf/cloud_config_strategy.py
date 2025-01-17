@@ -33,7 +33,7 @@ class CloudConfigStrategy(ABC):
         :param org_id: The user's ORG to link the Cloud Account with
         :param user_access_token: The user's access token
         :return: The response as it comes from OptScale
-        :raise: Rethrow OptScaleAPIResponseError if an error occurred consuming the
+        :raise: Rethrow APIResponseError if an error occurred consuming the
         OptScale APIs.
         """
         response = await self.optscale_cloud_account_api.link_cloud_account_with_org(

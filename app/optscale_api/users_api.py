@@ -3,8 +3,9 @@ from __future__ import annotations
 import logging
 
 from app import settings
+from app.api.users.services.user_verification import validate_user_invitation
 from app.core.api_client import APIClient
-from app.core.exceptions import raise_api_response_exception
+from app.core.exceptions import InvitationDoesNotExist, raise_api_response_exception
 
 from .auth_api import build_admin_api_key_header
 
@@ -24,10 +25,13 @@ class OptScaleUserAPI:
         password: str,
         admin_api_key: str,
         verified: bool = False,
+        check_user_email: bool = False,
     ) -> dict[str, str] | Exception:
         """
         Creates a new user in the system.
 
+        :param check_user_email: If True, we need to check if an invitation has been
+        generated for the given user before creating it.
         :param verified: if verified is True, an access token will be
         generated for the registered user. Otherwise, the token will be None
         :param admin_api_key: the secret admin API key
@@ -35,10 +39,22 @@ class OptScaleUserAPI:
         :param display_name: The display name of the user
         :param password: The password of the user.
         :return:dict[str, str] : User information.
-        :raises OptScaleAPIResponseError if any error occurs
+        :raises APIResponseError if any error occurs
         contacting the OptScale APIs
         """
-
+        email_check = False
+        if check_user_email:
+            # We need to verify if an invitation has been sent for the given user
+            # If an invitation exists, the user will be created
+            email_check = await validate_user_invitation(email=email)
+            if email_check:
+                verified = False
+            else:
+                # there is no invitation for the given user. Stop here!
+                logger.error(f"An error occurred registering the invited user {email}")
+                raise InvitationDoesNotExist(
+                    f"There is no invitation for this email  {email}"
+                )
         payload = {
             "email": email,
             "display_name": display_name,
@@ -52,7 +68,10 @@ class OptScaleUserAPI:
         if response.get("error"):
             logger.error("Failed to create the requested user")
             return raise_api_response_exception(response)
-        logger.info(f"User successfully created: {response}")
+        if email_check:
+            logger.info(f"Invited User successfully registered: {response}")
+        else:
+            logger.info(f"User successfully created: {response}")
         return response
 
     async def get_user_by_id(
@@ -64,7 +83,7 @@ class OptScaleUserAPI:
         :param admin_api_key: The secret admin API key
         :param user_id: The user's ID for whom we want to retrieve the information
         :return: A dict with the user's information if found
-        :raises OptScaleAPIResponseError if any error occurs
+        :raises APIResponseError if any error occurs
         contacting the OptScale APIs
         example
         {
@@ -100,7 +119,7 @@ class OptScaleUserAPI:
         :param user_id: The ID of the user to remove
         :param admin_api_key: The secret admin API key
         :return: No content if the operation is completed without errors.
-        :raises: OptScaleAPIResponseError if any error occurs
+        :raises: APIResponseError if any error occurs
         contacting the OptScale APIs
         """
         headers = build_admin_api_key_header(admin_api_key=admin_api_key)

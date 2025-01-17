@@ -6,7 +6,7 @@ from fastapi import status as http_status
 
 from app import settings
 from app.core.api_client import APIClient
-from app.core.exceptions import OptScaleAPIResponseError, raise_api_response_exception
+from app.core.exceptions import APIResponseError, raise_api_response_exception
 from app.optscale_api.auth_api import (
     build_admin_api_key_header,
     build_bearer_token_header,
@@ -26,7 +26,7 @@ class OptScaleInvitationAPI:
         :param invitation_id: The invitation id
         :param user_access_token: The access token of the invited user
         :return: no-content 204
-        :raises: OptScaleAPIResponseError if any error occurs
+        :raises: APIResponseError if any error occurs
         contacting the OptScale APIs
         """
         payload = {"action": "decline"}
@@ -78,7 +78,7 @@ class OptScaleInvitationAPI:
                 }
             ]
         }
-        :raises: OptScaleAPIResponseError if any error occurs
+        :raises: APIResponseError if any error occurs
         contacting the OptScale APIs
 
         """
@@ -98,7 +98,7 @@ class OptScaleInvitationAPI:
         if response.get("error"):
             logger.error("Failed to get list of invitations.")
             error_payload = response.get("data", {}).get("error", {})
-            raise OptScaleAPIResponseError(
+            raise APIResponseError(
                 title=error_payload.get("title", "OptScale API ERROR"),
                 error_code=error_payload.get("error_code"),
                 params=error_payload.get("params"),

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import AsyncClient
 
-from app.core.exceptions import OptScaleAPIResponseError, UserAccessTokenError
+from app.core.exceptions import APIResponseError, UserAccessTokenError
 from app.optscale_api.orgs_api import OptScaleOrgAPI
 from tests.helpers.jwt import create_jwt_token
 
@@ -35,10 +35,7 @@ async def test_create_org_no_authentication(async_client: AsyncClient, test_data
         response.status_code == 401
     ), "Expected 401 when no authentication is provided"
     got = response.json()
-    assert (
-        got.get("detail").get("errors").get("reason") == "Invalid authorization scheme."
-    )
-    assert "traceId" in got.get("detail")
+    assert got.get("error").get("reason") == "No Authentication in the Headers"
 
 
 @pytest.mark.parametrize(
@@ -117,15 +114,12 @@ async def test_create_org_exception_handling(
 
 
 async def test_get_org_no_authentication(async_client: AsyncClient, test_data: dict):
-    response = await async_client.get("/organizations")
+    response = await async_client.get("/organizations?user_id='myuserid'")
     assert (
         response.status_code == 401
     ), "Expected 401 when no authentication is provided"
     got = response.json()
-    assert (
-        got.get("detail").get("errors").get("reason") == "Invalid authorization scheme."
-    )
-    assert "traceId" in got.get("detail")
+    assert got.get("error").get("reason") == "No Authentication in the Headers"
 
 
 async def test_get_orgs_valid_response(
@@ -147,7 +141,7 @@ async def test_get_orgs_valid_response(
     "exception, expected_status, expected_title, expected_reason",  # noqa: PT006
     [
         (
-            OptScaleAPIResponseError(
+            APIResponseError(
                 title="Testing Exception occurred",
                 error_code="Error code from OptScale",
                 params=["params"],

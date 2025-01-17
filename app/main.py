@@ -16,7 +16,7 @@ app = FastAPI(
     openapi_url=f"{settings.api_v1_prefix}/openapi.json",
     debug=settings.debug,
 )
-
+# Todo: remove * from allow_origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,6 +24,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 app.include_router(api_router, prefix=settings.api_v1_prefix)
 app.add_middleware(LogRequestMiddleware)
