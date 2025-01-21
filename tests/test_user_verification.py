@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import AsyncClient
 
-from app.api.users.services.user_verification import validate_user_invitation
+from app.api.users.services.optscale_users_registration import validate_user_invitation
 from app.optscale_api.invitation_api import OptScaleInvitationAPI
 
 

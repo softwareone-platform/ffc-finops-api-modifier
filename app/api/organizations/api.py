@@ -10,7 +10,7 @@ from app.api.organizations.model import (
     OptScaleOrganization,
     OptScaleOrganizationResponse,
 )
-from app.core.auth_jwt_bearer import JWTBearer, handle_jwt_dependency
+from app.core.auth_jwt_bearer import JWTBearer
 from app.core.exceptions import (
     format_error_response,
 )
@@ -76,7 +76,6 @@ async def get_orgs(
         JWTBearer: Ensures that the request is authenticated using a valid JWT.
     """
     try:
-        handle_jwt_dependency(jwt_payload)
         # send request with the Secret token to the OptScale API
         response = await optscale_api.access_user_org_list_with_admin_key(
             user_id=user_id, admin_api_key=settings.admin_token, auth_client=auth_client
@@ -146,7 +145,7 @@ async def create_orgs(
     """
 
     try:
-        handle_jwt_dependency(jwt_payload)
+        # handle_jwt_dependency(jwt_payload)
         response = await org_api.create_user_org(
             org_name=data.org_name,
             user_id=data.user_id,
