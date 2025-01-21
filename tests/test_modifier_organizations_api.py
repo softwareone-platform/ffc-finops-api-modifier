@@ -35,7 +35,7 @@ async def test_create_org_no_authentication(async_client: AsyncClient, test_data
         response.status_code == 401
     ), "Expected 401 when no authentication is provided"
     got = response.json()
-    assert got.get("error").get("reason") == "No Authentication in the Headers"
+    assert got.get("reason") == "Invalid authorization scheme."
 
 
 @pytest.mark.parametrize(
@@ -119,7 +119,7 @@ async def test_get_org_no_authentication(async_client: AsyncClient, test_data: d
         response.status_code == 401
     ), "Expected 401 when no authentication is provided"
     got = response.json()
-    assert got.get("error").get("reason") == "No Authentication in the Headers"
+    assert got.get("reason") == "Invalid authorization scheme."
 
 
 async def test_get_orgs_valid_response(

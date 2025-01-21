@@ -6,6 +6,7 @@ import pytest
 
 from app import settings
 from app.core.auth_jwt_bearer import JWTBearer, decode_jwt, verify_jwt
+from app.core.exceptions import AuthException
 
 JWT_SECRET = settings.secret
 JWT_ALGORITHM = settings.algorithm
@@ -198,28 +199,24 @@ class TestJWTBearer:
         jwt_bearer = JWTBearer(auto_error=False)
         request = MockRequest(authorization=f"Bearer {token}")
         credentials = await jwt_bearer(request)
-        access_token = credentials.get("access_token")
-        assert access_token == token
+        assert credentials == token
 
     async def test_invalid_scheme(self):
         token = create_jwt_token(subject=SUBJECT)
         jwt_bearer = JWTBearer(auto_error=False)
         request = MockRequest(authorization=f"Basic {token}")
-        response = await jwt_bearer(request)
-        assert response.get("error") == "Authentication failed."
-        assert response.get("reason") == "Invalid authorization scheme."
+        with pytest.raises(AuthException):
+            await jwt_bearer(request)
 
     async def test_invalid_token(self):
         invalid_token = "invalid.token.here"
         jwt_bearer = JWTBearer(auto_error=False)
         request = MockRequest(authorization=f"Bearer {invalid_token}")
-        response = await jwt_bearer(request)
-        assert response.get("error") == "Authentication failed."
-        assert response.get("reason") == "The token is invalid or has expired."
+        with pytest.raises(AuthException):
+            await jwt_bearer(request)
 
     async def test_missing_authorization(self):
         jwt_bearer = JWTBearer(auto_error=False)
         request = MockRequest()
-        response = await jwt_bearer(request)
-        assert response.get("error") == "Authentication not provided"
-        assert response.get("reason") == "No Authentication in the Headers"
+        with pytest.raises(AuthException):
+            await jwt_bearer(request)

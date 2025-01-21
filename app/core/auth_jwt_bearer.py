@@ -10,9 +10,12 @@ from jwt.exceptions import (
     InvalidTokenError,
     MissingRequiredClaimError,
 )
+from starlette import status as http_status
 
 from app import settings
-from app.core.exceptions import APIResponseError
+from app.core.exceptions import (
+    AuthException,
+)
 
 JWT_SECRET = settings.secret
 JWT_ALGORITHM = settings.algorithm
@@ -78,21 +81,8 @@ def verify_jwt(jw_token: str) -> bool:
     return is_token_valid
 
 
-def handle_jwt_dependency(jwt_payload: dict):
-    if jwt_payload.get("error"):
-        raise APIResponseError(
-            title=jwt_payload.get("error"),
-            error_code="",
-            params=[],
-            reason=jwt_payload.get("reason"),
-            status_code=401,
-        )
-    else:
-        return jwt_payload.get("access_token")
-
-
 class JWTBearer(HTTPBearer):
-    def __init__(self, auto_error: bool = False):
+    def __init__(self, auto_error: bool = False, allow_unauthenticated: bool = False):
         """
 
         :param auto_error: When auto_error=True, HTTPBearer will raise a 403 error
@@ -102,30 +92,29 @@ class JWTBearer(HTTPBearer):
         :type auto_error: bool
         """
         super().__init__(auto_error=auto_error)
+        self.allow_unauthenticated = allow_unauthenticated
 
     async def __call__(self, request: Request):
-        headers = request.headers
-        authorization = headers.get("Authorization")
-        if authorization is None:
-            # Note: This is a Special case to address the users invitation flow
-            # with no Authentication
-            return {
-                "error": "Authentication not provided",
-                "reason": "No Authentication in the Headers",
-            }
-
         credentials: HTTPAuthorizationCredentials = await super().__call__(request)
         if credentials:
             # The token is expired or not valid
             if not verify_jwt(credentials.credentials):
-                return {
-                    "error": "Authentication failed.",
-                    "reason": "The token is invalid or has expired.",
-                }
-            return {"access_token": credentials.credentials}
+                raise AuthException(
+                    title="Authentication failed.",
+                    reason="The token is invalid or has expired.",
+                    status_code=http_status.HTTP_401_UNAUTHORIZED,
+                    params=[],
+                    error_code="OE0235",
+                )
+            return credentials.credentials
+        elif self.allow_unauthenticated:
+            return None
         else:
             # The authentication schema is not Bearer
-            return {
-                "error": "Authentication failed.",
-                "reason": "Invalid authorization scheme.",
-            }
+            raise AuthException(
+                title="Authentication failed.",
+                reason="Invalid authorization scheme.",
+                status_code=401,
+                params=[],
+                error_code="",
+            )

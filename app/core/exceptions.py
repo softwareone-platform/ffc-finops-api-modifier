@@ -36,6 +36,27 @@ class CloudAccountConfigError(Exception):
     pass
 
 
+class AuthException(Exception):
+    def __init__(
+        self,
+        status_code: int,
+        reason: str,
+        error_code: str,
+        title: str = None,
+        params: list = None,
+    ):  # noqa: E501
+        if params is None:
+            params = []
+        self.status_code = status_code
+        self.title = title
+        self.error = {
+            "status_code": status_code,
+            "reason": reason,
+            "error_code": error_code,
+            "params": params,
+        }
+
+
 class APIResponseError(Exception):
     """
     Attributes:

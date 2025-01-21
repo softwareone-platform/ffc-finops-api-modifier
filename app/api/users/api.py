@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, Depends
 from fastapi import status as http_status
 from starlette.responses import JSONResponse
 
 from app import settings
 from app.api.users.model import CreateUserData, CreateUserResponse
-from app.core.auth_jwt_bearer import JWTBearer, handle_jwt_dependency
+from app.api.users.services.optscale_users_registration import (
+    add_new_user,
+    validate_email_and_add_invited_user,
+)
+from app.core.auth_jwt_bearer import JWTBearer
 from app.core.exceptions import (
     APIResponseError,
     InvitationDoesNotExist,
@@ -15,6 +21,7 @@ from app.core.exceptions import (
 )
 from app.optscale_api.users_api import OptScaleUserAPI
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -26,8 +33,8 @@ router = APIRouter()
 )
 async def create_user(
     data: CreateUserData,
-    user_api: OptScaleUserAPI = Depends(),
-    jwt_payload: dict = Depends(JWTBearer()),
+    optscale_user_api: OptScaleUserAPI = Depends(),
+    jwt_token: dict = Depends(JWTBearer(allow_unauthenticated=True)),
 ):
     """
     This endpoint registers users in OptScale.
@@ -40,9 +47,9 @@ async def create_user(
 
     It returns the created user's details.
 
-    :param jwt_payload: A dictionary that will contain the access token or an error
+    :param jwt_token: a JWT token or None
     :param data: The input data required to create a user.
-    :param user_api: An instance of OptScaleOrgAPI for managing organization operations.
+    :param optscale_user_api: An instance of OptScaleOrgAPI for managing organization operations.
                     Dependency injection via `Depends()`.
 
     :return: A response model containing the details of the newly created user.
@@ -80,16 +87,24 @@ async def create_user(
         JWTBearer: Ensures that the request is authenticated using a valid JWT.
     """
     try:
-        auto_verified, check_user_email = await process_authentication_info(jwt_payload)
-
-        response = await user_api.create_user(
-            email=str(data.email),
-            display_name=data.display_name,
-            password=data.password,
-            admin_api_key=settings.admin_token,
-            verified=auto_verified,
-            check_user_email=check_user_email,
-        )
+        if jwt_token is None:
+            response = await validate_email_and_add_invited_user(
+                email=str(data.email),
+                display_name=data.display_name,
+                password=data.password,
+                admin_token=settings.admin_token,
+                optscale_user_api=optscale_user_api,
+            )
+            logger.info(f"Invited User successfully registered: {response}")
+        else:
+            response = await add_new_user(
+                email=str(data.email),
+                display_name=data.display_name,
+                password=data.password,
+                admin_token=settings.admin_token,
+                optscale_user_api=optscale_user_api,
+            )
+            logger.info(f"User successfully created: {response}")
         return JSONResponse(
             status_code=response.get("status_code", http_status.HTTP_201_CREATED),
             content=response.get("data", {}),
@@ -101,23 +116,3 @@ async def create_user(
         InvitationDoesNotExist,
     ) as error:
         return format_error_response(error)
-
-
-async def process_authentication_info(jwt_payload: dict):
-    """
-
-
-    :param jwt_payload: jwt_payload is a dict with the result of calling the JWTBearer class.
-    :return: Bool or raise an APIResponseError if the token is not valid
-    """
-    check_user_email = False
-    auto_verified = True
-    if jwt_payload.get("error"):
-        if jwt_payload.get("error") == "Authentication not provided":
-            # Try to see if the user has been invited to the platform
-            check_user_email = True
-            auto_verified = False
-        else:
-            # The token provided is not valid. APIResponseError
-            handle_jwt_dependency(jwt_payload)
-    return auto_verified, check_user_email
