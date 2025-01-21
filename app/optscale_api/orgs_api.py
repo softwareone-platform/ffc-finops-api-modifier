@@ -50,7 +50,7 @@ class OptScaleOrgAPI:
                 }
             ]}
         }
-         :raises: OptScaleAPIResponseError if any error occurs
+         :raises: APIResponseError if any error occurs
         contacting the OptScale APIs
         """
         response = await self.api_client.get(

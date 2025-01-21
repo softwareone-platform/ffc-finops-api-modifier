@@ -56,7 +56,7 @@ class OptScaleCloudAccountAPI:
             "parent_id": null
           }
 
-        :raise: OptScaleAPIResponseError if an error occurs
+        :raise: APIResponseError if an error occurs
 
         """
         response = await self.api_client.post(

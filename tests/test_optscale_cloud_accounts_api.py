@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.core.exceptions import OptScaleAPIResponseError
+from app.core.exceptions import APIResponseError
 from app.optscale_api.cloud_accounts import OptScaleCloudAccountAPI
 
 
@@ -61,7 +61,7 @@ async def test_account_already_exists(
     }
     payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
     with caplog.at_level(logging.ERROR):
-        with pytest.raises(OptScaleAPIResponseError):
+        with pytest.raises(APIResponseError):
             await optscale_cloud_account_api_instance.link_cloud_account_with_org(
                 user_access_token="good token", org_id="ABC-101-DEF-1001", conf=payload
             )

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from app.core.exceptions import (
-    OptScaleAPIResponseError,
+    APIResponseError,
     UserAccessTokenError,
     UserOrgCreationError,
 )
@@ -164,7 +164,7 @@ async def test_get_user_org_response_error(
         "data": {"error": {"reason": "Oh no, I made a mistake!"}},
     }
     with caplog.at_level(logging.ERROR):
-        with pytest.raises(OptScaleAPIResponseError):  # noqa: PT012
+        with pytest.raises(APIResponseError):  # noqa: PT012
             await optscale_org_api_instance.access_user_org_list_with_admin_key(
                 user_id="test_user",
                 admin_api_key="test_key",
@@ -309,7 +309,7 @@ async def test_create_org_user_response_error(
         "error": "Invalid JSON format in response",
     }
     with caplog.at_level(logging.ERROR):
-        with pytest.raises(OptScaleAPIResponseError) as exc_info:
+        with pytest.raises(APIResponseError) as exc_info:
             await optscale_org_api_instance.create_user_org(
                 org_name="MyOrg",
                 currency="USD",
@@ -329,7 +329,7 @@ async def test_create_org_user_response_error(
             in record.message
             for record in caplog.records
         )
-        # check the logging message printed by the OptScaleAPIResponseError
+        # check the logging message printed by the APIResponseError
         assert any(
             "Exception occurred creating an organization on OptScale" in record.message
             for record in caplog.records

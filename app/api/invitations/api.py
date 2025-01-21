@@ -6,18 +6,12 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.responses import JSONResponse
 
 from app import settings
-from app.api.invitations.model import (
-    DeclineInvitation,
-    RegisteredInvitedUserResponse,
-    RegisterInvitedUser,
-)
+from app.api.invitations.model import DeclineInvitation
 from app.api.invitations.services.invitations import (
-    register_invited_user_on_optscale,
     remove_user,
 )
 from app.core.exceptions import (
-    InvitationDoesNotExist,
-    OptScaleAPIResponseError,
+    APIResponseError,
     format_error_response,
 )
 from app.optscale_api.invitation_api import OptScaleInvitationAPI
@@ -36,37 +30,8 @@ def get_bearer_token(
     return auth.credentials  # Return the raw token
 
 
-def get_optscale_user_api() -> OptScaleUserAPI:
-    return OptScaleUserAPI()
-
-
-@router.post(
-    path="/users",
-    status_code=http_status.HTTP_201_CREATED,
-    response_model=RegisteredInvitedUserResponse,
-)
-async def register_invited(
-    data: RegisterInvitedUser,
-    user_api: OptScaleUserAPI = Depends(get_optscale_user_api),
-):  # noqa: E501
-    try:
-        response = await register_invited_user_on_optscale(
-            email=str(data.email),
-            display_name=data.display_name,
-            password=data.password,
-            user_api=user_api,
-        )
-        return JSONResponse(
-            status_code=response.get("status_code", http_status.HTTP_201_CREATED),
-            content=response.get("data", {}),
-        )
-
-    except (OptScaleAPIResponseError, InvitationDoesNotExist) as error:
-        return format_error_response(error)
-
-
-@router.post(
-    path="/users/invites/{invite_id}/decline",
+@router.patch(
+    path="/users/invites/{invite_id}",
     status_code=http_status.HTTP_200_OK,
 )
 async def decline_invitation(
@@ -97,5 +62,5 @@ async def decline_invitation(
             status_code=response.get("status_code", http_status.HTTP_200_OK),
             content={"response": "Invitation declined"},
         )
-    except OptScaleAPIResponseError as error:
+    except APIResponseError as error:
         return format_error_response(error)

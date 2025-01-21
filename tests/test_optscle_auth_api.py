@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 import pytest
 from httpx import AsyncClient
 
-from app.core.exceptions import OptScaleAPIResponseError, UserAccessTokenError
+from app.core.exceptions import APIResponseError, UserAccessTokenError
 from app.optscale_api.auth_api import OptScaleAuth
 
 
@@ -50,7 +50,7 @@ async def test_obtain_user_auth_token_with_admin_api_key_error_response(
     mock_response = {"status_code": 503, "data": {}, "error": "Connection error: Test"}
     mock_post.return_value = mock_response
     with caplog.at_level(logging.ERROR):
-        with pytest.raises(OptScaleAPIResponseError) as exc_info:
+        with pytest.raises(APIResponseError) as exc_info:
             await opt_scale_auth.obtain_user_auth_token_with_admin_api_key(
                 user_id="f0bd0c4a-7c55-45b7-8b58-27740e38789a",
                 admin_api_key="f2312f2b-46h0-4456-o0i9-58e64f2j6725",
