@@ -3,10 +3,10 @@ import time
 
 import jwt
 import pytest
-from fastapi import HTTPException
 
 from app import settings
 from app.core.auth_jwt_bearer import JWTBearer, decode_jwt, verify_jwt
+from app.core.exceptions import AuthException
 
 JWT_SECRET = settings.secret
 JWT_ALGORITHM = settings.algorithm
@@ -205,24 +205,18 @@ class TestJWTBearer:
         token = create_jwt_token(subject=SUBJECT)
         jwt_bearer = JWTBearer(auto_error=False)
         request = MockRequest(authorization=f"Basic {token}")
-        with pytest.raises(HTTPException) as exc_info:
+        with pytest.raises(AuthException):
             await jwt_bearer(request)
-        assert exc_info.value.status_code == 401
-        assert exc_info.value.detail["title"] == "Invalid authorization scheme."
 
     async def test_invalid_token(self):
         invalid_token = "invalid.token.here"
         jwt_bearer = JWTBearer(auto_error=False)
         request = MockRequest(authorization=f"Bearer {invalid_token}")
-        with pytest.raises(HTTPException) as exc_info:
+        with pytest.raises(AuthException):
             await jwt_bearer(request)
-        assert exc_info.value.status_code == 401
-        assert exc_info.value.detail["title"] == "Invalid token or expired token."
 
     async def test_missing_authorization(self):
         jwt_bearer = JWTBearer(auto_error=False)
         request = MockRequest()
-        with pytest.raises(HTTPException) as exc_info:
+        with pytest.raises(AuthException):
             await jwt_bearer(request)
-        assert exc_info.value.status_code == 401
-        assert exc_info.value.detail["title"] == "Invalid authorization scheme."

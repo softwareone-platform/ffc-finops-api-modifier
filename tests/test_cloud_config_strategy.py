@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from app.api.cloud_account.cloud_accounts_conf.cloud_config_strategy import (
     CloudConfigStrategy,
 )
-from app.core.exceptions import OptScaleAPIResponseError
+from app.core.exceptions import APIResponseError
 from app.optscale_api.cloud_accounts import OptScaleCloudAccountAPI
 
 
@@ -66,7 +66,7 @@ async def test_link_cloud_account_to_org_exceptions(
     strategy = TestCloudConfigStrategy(
         optscale_cloud_account_api=optscale_cloud_account_api
     )
-    with pytest.raises(OptScaleAPIResponseError):
+    with pytest.raises(APIResponseError):
         await strategy.link_cloud_account_to_org(
             config=payload, user_access_token="good token", org_id="my_org_id"
         )

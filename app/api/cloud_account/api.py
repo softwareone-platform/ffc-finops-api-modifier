@@ -11,8 +11,8 @@ from app.api.cloud_account.cloud_accounts_manager import (
 from app.api.cloud_account.model import AddCloudAccount, AddCloudAccountResponse
 from app.api.invitations.api import get_bearer_token
 from app.core.exceptions import (
+    APIResponseError,
     CloudAccountConfigError,
-    OptScaleAPIResponseError,
     format_error_response,
 )
 
@@ -52,6 +52,6 @@ async def add_cloud_account(
             status_code=response.get("status_code", http_status.HTTP_201_CREATED),
             content=response.get("data", {}),
         )
-    except (OptScaleAPIResponseError, CloudAccountConfigError, ValueError) as error:
+    except (APIResponseError, CloudAccountConfigError, ValueError) as error:
         logger.error(f"An error occurred adding the cloud account {data.type} {error}")
         return format_error_response(error)

@@ -1,13 +1,27 @@
+from __future__ import annotations
+
+import logging
+
 from fastapi import APIRouter, Depends
 from fastapi import status as http_status
 from starlette.responses import JSONResponse
 
 from app import settings
 from app.api.users.model import CreateUserData, CreateUserResponse
+from app.api.users.services.optscale_users_registration import (
+    add_new_user,
+    validate_email_and_add_invited_user,
+)
 from app.core.auth_jwt_bearer import JWTBearer
-from app.core.exceptions import OptScaleAPIResponseError, format_error_response
+from app.core.exceptions import (
+    APIResponseError,
+    InvitationDoesNotExist,
+    UserAccessTokenError,
+    format_error_response,
+)
 from app.optscale_api.users_api import OptScaleUserAPI
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -15,16 +29,27 @@ router = APIRouter()
     path="",
     status_code=http_status.HTTP_201_CREATED,
     response_model=CreateUserResponse,
-    dependencies=[Depends(JWTBearer())],
+    dependencies=[],
 )
-async def create_user(data: CreateUserData, user_api: OptScaleUserAPI = Depends()):
+async def create_user(
+    data: CreateUserData,
+    optscale_user_api: OptScaleUserAPI = Depends(),
+    jwt_token: dict = Depends(JWTBearer(allow_unauthenticated=True)),
+):
     """
-    Create a FinOps user
-    This endpoint allows the creation of a new user by interacting with the OptScale API.
+    This endpoint registers users in OptScale.
+    It can be consumed in two ways:
+    1. If a JWT Token is provided, the user will be created and verified.
+    2. IF no Authentication is provided, the given user will be created ONLY
+        if an invitation exists with the provided email address. If an invitation exists,
+        the user will be created but not auto-verified. The user has to perform
+        the verification action.
+
     It returns the created user's details.
 
+    :param jwt_token: a JWT token or None
     :param data: The input data required to create a user.
-    :param user_api: An instance of OptScaleOrgAPI for managing organization operations.
+    :param optscale_user_api: An instance of OptScaleOrgAPI for managing organization operations.
                     Dependency injection via `Depends()`.
 
     :return: A response model containing the details of the newly created user.
@@ -62,17 +87,32 @@ async def create_user(data: CreateUserData, user_api: OptScaleUserAPI = Depends(
         JWTBearer: Ensures that the request is authenticated using a valid JWT.
     """
     try:
-        response = await user_api.create_user(
-            email=str(data.email),
-            display_name=data.display_name,
-            password=data.password,
-            admin_api_key=settings.admin_token,
-            verified=True,
-        )
+        if jwt_token is None:
+            response = await validate_email_and_add_invited_user(
+                email=str(data.email),
+                display_name=data.display_name,
+                password=data.password,
+                admin_token=settings.admin_token,
+                optscale_user_api=optscale_user_api,
+            )
+            logger.info(f"Invited User successfully registered: {response}")
+        else:
+            response = await add_new_user(
+                email=str(data.email),
+                display_name=data.display_name,
+                password=data.password,
+                admin_token=settings.admin_token,
+                optscale_user_api=optscale_user_api,
+            )
+            logger.info(f"User successfully created: {response}")
         return JSONResponse(
             status_code=response.get("status_code", http_status.HTTP_201_CREATED),
             content=response.get("data", {}),
         )
 
-    except OptScaleAPIResponseError as error:
+    except (
+        APIResponseError,
+        UserAccessTokenError,
+        InvitationDoesNotExist,
+    ) as error:
         return format_error_response(error)

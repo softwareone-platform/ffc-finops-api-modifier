@@ -35,10 +35,9 @@ class OptScaleUserAPI:
         :param display_name: The display name of the user
         :param password: The password of the user.
         :return:dict[str, str] : User information.
-        :raises OptScaleAPIResponseError if any error occurs
+        :raises APIResponseError if any error occurs
         contacting the OptScale APIs
         """
-
         payload = {
             "email": email,
             "display_name": display_name,
@@ -52,7 +51,6 @@ class OptScaleUserAPI:
         if response.get("error"):
             logger.error("Failed to create the requested user")
             return raise_api_response_exception(response)
-        logger.info(f"User successfully created: {response}")
         return response
 
     async def get_user_by_id(
@@ -64,7 +62,7 @@ class OptScaleUserAPI:
         :param admin_api_key: The secret admin API key
         :param user_id: The user's ID for whom we want to retrieve the information
         :return: A dict with the user's information if found
-        :raises OptScaleAPIResponseError if any error occurs
+        :raises APIResponseError if any error occurs
         contacting the OptScale APIs
         example
         {
@@ -100,7 +98,7 @@ class OptScaleUserAPI:
         :param user_id: The ID of the user to remove
         :param admin_api_key: The secret admin API key
         :return: No content if the operation is completed without errors.
-        :raises: OptScaleAPIResponseError if any error occurs
+        :raises: APIResponseError if any error occurs
         contacting the OptScale APIs
         """
         headers = build_admin_api_key_header(admin_api_key=admin_api_key)

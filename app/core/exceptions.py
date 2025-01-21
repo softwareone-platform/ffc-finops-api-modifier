@@ -36,7 +36,28 @@ class CloudAccountConfigError(Exception):
     pass
 
 
-class OptScaleAPIResponseError(Exception):
+class AuthException(Exception):
+    def __init__(
+        self,
+        status_code: int,
+        reason: str,
+        error_code: str,
+        title: str = None,
+        params: list = None,
+    ):  # noqa: E501
+        if params is None:
+            params = []
+        self.status_code = status_code
+        self.title = title
+        self.error = {
+            "status_code": status_code,
+            "reason": reason,
+            "error_code": error_code,
+            "params": params,
+        }
+
+
+class APIResponseError(Exception):
     """
     Attributes:
         status_code (int): The HTTP status code of the API response.
@@ -89,7 +110,7 @@ def raise_api_response_exception(response):
     :rtype:
     """
     error_payload = response.get("data", {}).get("error", {})
-    raise OptScaleAPIResponseError(
+    raise APIResponseError(
         title=error_payload.get("title", "OptScale API ERROR"),
         error_code=error_payload.get("error_code", ""),
         params=error_payload.get("params", []),

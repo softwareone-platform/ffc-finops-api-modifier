@@ -3,7 +3,6 @@ from typing import Optional
 
 import jwt
 from fastapi import Request
-from fastapi import status as http_status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt.exceptions import (
     DecodeError,
@@ -11,9 +10,12 @@ from jwt.exceptions import (
     InvalidTokenError,
     MissingRequiredClaimError,
 )
+from starlette import status as http_status
 
 from app import settings
-from app.core.error_formats import create_error_response
+from app.core.exceptions import (
+    AuthException,
+)
 
 JWT_SECRET = settings.secret
 JWT_ALGORITHM = settings.algorithm
@@ -80,7 +82,7 @@ def verify_jwt(jw_token: str) -> bool:
 
 
 class JWTBearer(HTTPBearer):
-    def __init__(self, auto_error: bool = False):
+    def __init__(self, auto_error: bool = False, allow_unauthenticated: bool = False):
         """
 
         :param auto_error: When auto_error=True, HTTPBearer will raise a 403 error
@@ -90,21 +92,29 @@ class JWTBearer(HTTPBearer):
         :type auto_error: bool
         """
         super().__init__(auto_error=auto_error)
+        self.allow_unauthenticated = allow_unauthenticated
 
     async def __call__(self, request: Request):
         credentials: HTTPAuthorizationCredentials = await super().__call__(request)
         if credentials:
+            # The token is expired or not valid
             if not verify_jwt(credentials.credentials):
-                raise create_error_response(
+                raise AuthException(
+                    title="Authentication failed.",
+                    reason="The token is invalid or has expired.",
                     status_code=http_status.HTTP_401_UNAUTHORIZED,
-                    title="Invalid token or expired token.",
-                    errors={"reason": "The token is invalid or has expired."},
+                    params=[],
+                    error_code="OE0235",
                 )
             return credentials.credentials
+        elif self.allow_unauthenticated:
+            return None
         else:
             # The authentication schema is not Bearer
-            raise create_error_response(
-                status_code=http_status.HTTP_401_UNAUTHORIZED,
-                title="Invalid authorization scheme.",
-                errors={"reason": "Invalid authorization scheme."},
+            raise AuthException(
+                title="Authentication failed.",
+                reason="Invalid authorization scheme.",
+                status_code=401,
+                params=[],
+                error_code="",
             )

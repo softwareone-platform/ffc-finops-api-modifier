@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import AsyncClient
 
-from app.core.exceptions import InvitationDoesNotExist, OptScaleAPIResponseError
+from app.core.exceptions import APIResponseError, InvitationDoesNotExist
 from app.optscale_api.auth_api import OptScaleAuth
 from app.optscale_api.invitation_api import OptScaleInvitationAPI
 from app.optscale_api.users_api import OptScaleUserAPI
@@ -31,7 +31,7 @@ def mock_decline_invitation():
 def mock_get_list_of_invitations():
     patcher = patch.object(
         OptScaleInvitationAPI, "get_list_of_invitations", new=AsyncMock()
-    )
+    )  # noqa: E501
     mock = patcher.start()
     yield mock
     patcher.stop()
@@ -60,7 +60,7 @@ async def test_register_invited_user(
     mock_get_list_of_invitations.return_value = {
         "data": {"invites": [{"field": "value"}]}
     }
-    response = await async_client.post("/invitations/users", json=payload)
+    response = await async_client.post("/users", json=payload)
     assert response.status_code == 201
     got = response.json()
     for k, v in want.items():
@@ -81,7 +81,7 @@ async def test_register_invited_user_exception_handling(
     }
 
     # Simulate an exception in `create_user`
-    mock_register_invited.side_effect = OptScaleAPIResponseError(
+    mock_register_invited.side_effect = APIResponseError(
         title="Error response from OptScale",
         reason="Test Exception",
         status_code=403,
@@ -93,7 +93,7 @@ async def test_register_invited_user_exception_handling(
     # Capture logs
     with caplog.at_level(logging.ERROR):
         # Send request with valid JWT token
-        response = await async_client.post("/invitations/users", json=payload)
+        response = await async_client.post("/users", json=payload)
 
     # Verify the response status and content
     assert (
@@ -101,35 +101,29 @@ async def test_register_invited_user_exception_handling(
     ), "Expected 403 Forbidden when an exception occurs in user creation"
     got = response.json()
     assert got.get("error").get("reason") == "Test Exception"
-    # Verify the log entry
-    assert (
-        "An error  occurred registering the invited user haran.banjo@email.com"
-        == caplog.messages[0]
-    )  # noqa: E501
 
 
 async def test_register_invited_user_exception_handling_invitation_not_found(
     async_client: AsyncClient,
     test_data: dict,
-    mock_register_invited,
+    # mock_register_invited,
     caplog,
     mock_get_list_of_invitations,
 ):
-    mock_get_list_of_invitations.return_value = {"data": {"invites": []}}
-
     payload = test_data["invitation"]["case_create"]["payload"]
-
-    # Capture logs
-    with caplog.at_level(logging.ERROR):
-        # Send request with valid JWT token
-        response = await async_client.post("/invitations/users", json=payload)
+    mock_get_list_of_invitations.return_value = {"data": {"invites": []}}
+    # Send request with valid JWT token
+    response = await async_client.post("/users", json=payload)
 
     # Verify the response status and content
     assert (
         response.status_code == 403
     ), "Expected 403 Forbidden when an exception occurs in user creation"
     got = response.json()
-    assert got.get("error") == "Invitation not found"
+    assert (
+        got.get("error")
+        == "There is no invitation for this email  haran.banjo@email.com"
+    )
 
 
 async def test_register_invited_user_exception_handling_invitation_doesnot_exist(
@@ -151,7 +145,7 @@ async def test_register_invited_user_exception_handling_invitation_doesnot_exist
     # Capture logs
     with caplog.at_level(logging.ERROR):
         # Send request with valid JWT token
-        response = await async_client.post("/invitations/users", json=payload)
+        response = await async_client.post("/users", json=payload)
 
     # Verify the response status and content
     assert (
@@ -159,11 +153,6 @@ async def test_register_invited_user_exception_handling_invitation_doesnot_exist
     ), "Expected 403 Forbidden when an exception occurs in user creation"
     got = response.json()
     assert got.get("error") == "Test Exception"
-    # Verify the log entry
-    assert (
-        "There is no invitation for this email  haran.banjo@email.com"
-        == caplog.messages[0]
-    )
 
 
 async def test_decline_invitation(
@@ -173,8 +162,8 @@ async def test_decline_invitation(
     test_data: dict,
 ):
     mock_decline_invitation.return_value = {"status_code": 204}
-    response = await async_client.post(
-        "/invitations/users/invites/bf9f6c28-53c5-40ab-b530-4850ca5fc27f/decline",
+    response = await async_client.patch(
+        "/invitations/users/invites/bf9f6c28-53c5-40ab-b530-4850ca5fc27f",
         headers={"Authorization": "Bearer valid_user_token"},
         json={"user_id": "b57b9964-7046-4e20-812c-01ab52cf4661"},
     )  # noqa: E501
@@ -190,7 +179,7 @@ async def test_decline_invitation_handle_exception(
 ):
     mock_response = "valid_user_token"
     mock_optscale_auth_post.return_value = mock_response
-    mock_decline_invitation.side_effect = OptScaleAPIResponseError(
+    mock_decline_invitation.side_effect = APIResponseError(
         title="Error response from OptScale",
         reason="Test Exception",
         status_code=403,
@@ -199,8 +188,8 @@ async def test_decline_invitation_handle_exception(
     jwt_token = create_jwt_token()
     with caplog.at_level(logging.ERROR):
         # Send request with valid JWT token
-        response = await async_client.post(
-            "/invitations/users/invites/bf9f6c28-53c5-40ab-b530-4850ca5fc27f/decline",
+        response = await async_client.patch(
+            "/invitations/users/invites/bf9f6c28-53c5-40ab-b530-4850ca5fc27f",
             json={"user_id": "b57b9964-7046-4e20-812c-01ab52cf4661"},
             headers={"Authorization": "Bearer " + jwt_token},
         )

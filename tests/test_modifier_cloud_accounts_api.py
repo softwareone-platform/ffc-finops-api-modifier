@@ -7,7 +7,7 @@ from httpx import AsyncClient
 from app.api.cloud_account.cloud_accounts_manager import (
     CloudStrategyManager,
 )
-from app.core.exceptions import OptScaleAPIResponseError
+from app.core.exceptions import APIResponseError
 
 
 @pytest.fixture
@@ -87,7 +87,7 @@ async def test_exception_handling(
     caplog,
     mock_add_cloud_account,
 ):
-    mock_add_cloud_account.side_effect = OptScaleAPIResponseError(
+    mock_add_cloud_account.side_effect = APIResponseError(
         title="Error response from OptScale",
         reason="Test Exception",
         status_code=403,
@@ -116,7 +116,7 @@ async def test_no_auth(
     caplog,
     mock_add_cloud_account,
 ):
-    mock_add_cloud_account.side_effect = OptScaleAPIResponseError(
+    mock_add_cloud_account.side_effect = APIResponseError(
         title="Error response from OptScale",
         reason="Test Exception",
         status_code=403,
