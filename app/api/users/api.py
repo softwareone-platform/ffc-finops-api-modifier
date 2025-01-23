@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from fastapi import status as http_status
@@ -33,8 +34,8 @@ router = APIRouter()
 )
 async def create_user(
     data: CreateUserData,
-    optscale_user_api: OptScaleUserAPI = Depends(),
-    jwt_token: dict = Depends(JWTBearer(allow_unauthenticated=True)),
+    optscale_user_api: Annotated[OptScaleUserAPI, Depends()],
+    jwt_token: Annotated[dict, Depends(JWTBearer(allow_unauthenticated=True))],
 ):
     """
     This endpoint registers users in OptScale.

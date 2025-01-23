@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from typing import Annotated
 
 from fastapi import Depends
 
@@ -15,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 async def validate_user_delete(
     user_token: str,
-    invitation_api: OptScaleInvitationAPI = Depends(),
-    org_api: OptScaleOrgAPI = Depends(),
+    invitation_api: Annotated[OptScaleInvitationAPI, Depends()],
+    org_api: Annotated[OptScaleOrgAPI, Depends()],
 ) -> bool:
     """
     Validates if a user can be deleted by checking invitations and organizations.
@@ -47,9 +48,9 @@ async def remove_user(
     user_id: str,
     user_access_token: str,
     admin_api_key: str,
-    invitation_api: OptScaleInvitationAPI = Depends(),
-    org_api: OptScaleOrgAPI = Depends(),
-    user_api: OptScaleUserAPI = Depends(),
+    invitation_api: Annotated[OptScaleInvitationAPI, Depends()],
+    org_api: Annotated[OptScaleOrgAPI, Depends()],
+    user_api: Annotated[OptScaleUserAPI, Depends()],
 ) -> bool:
     """
     Removes a user if they have no invitations or organizations.

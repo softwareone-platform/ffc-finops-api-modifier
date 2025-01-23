@@ -1,17 +1,27 @@
 from __future__ import annotations
 
+import logging
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from fastapi import status as http_status
 from starlette.responses import JSONResponse
 
 from app import settings
+from app.api.cloud_account.model import AddCloudAccount, AddCloudAccountResponse
+from app.api.invitations.api import get_bearer_token
 from app.api.organizations.model import (
     CreateOrgData,
     OptScaleOrganization,
     OptScaleOrganizationResponse,
 )
+from app.api.organizations.services.optscale_cloud_accounts import (
+    link_cloud_account_to_org,
+)
 from app.core.auth_jwt_bearer import JWTBearer
 from app.core.exceptions import (
+    APIResponseError,
+    CloudAccountConfigError,
     format_error_response,
 )
 from app.optscale_api.auth_api import OptScaleAuth
@@ -20,18 +30,19 @@ from app.optscale_api.orgs_api import OptScaleOrgAPI
 
 router = APIRouter()
 
+logger = logging.getLogger("__name__")
+
 
 @router.get(
     path="",
     status_code=http_status.HTTP_200_OK,
     response_model=OptScaleOrganizationResponse,
-    dependencies=[],
+    dependencies=[Depends(JWTBearer())],
 )
 async def get_orgs(
     user_id: str,
-    optscale_api: OptScaleOrgAPI = Depends(),
-    auth_client: OptScaleAuth = Depends(get_auth_client),
-    jwt_payload: dict = Depends(JWTBearer()),
+    auth_client: Annotated[OptScaleAuth, Depends(get_auth_client)],
+    optscale_api: Annotated[OptScaleOrgAPI, Depends()],
 ):
     """
     Retrieve the organization data associated with a given user.
@@ -90,21 +101,50 @@ async def get_orgs(
 
 
 @router.post(
+    path="/{org_id}/cloud_accounts",
+    status_code=http_status.HTTP_201_CREATED,
+    response_model=AddCloudAccountResponse,
+    dependencies=[],
+)
+async def link_cloud_account(
+    org_id: str,
+    data: AddCloudAccount,
+    user_access_token: Annotated[str, Depends(get_bearer_token)],
+):
+    try:
+        response = await link_cloud_account_to_org(
+            name=data.name,
+            type=data.type,
+            config=data.config,
+            process_recommendations=data.process_recommendations,
+            auto_import=data.auto_import,
+            org_id=org_id,
+            user_access_token=user_access_token,
+        )
+        return JSONResponse(
+            status_code=response.get("status_code", http_status.HTTP_201_CREATED),
+            content=response.get("data", {}),
+        )
+
+    except (APIResponseError, CloudAccountConfigError, ValueError) as error:
+        logger.error(f"An error occurred adding the cloud account {data.type} {error}")
+        return format_error_response(error)
+
+
+@router.post(
     path="",
     status_code=http_status.HTTP_201_CREATED,
     response_model=OptScaleOrganization,
-    dependencies=[],
+    dependencies=[Depends(JWTBearer())],
 )
 async def create_orgs(
     data: CreateOrgData,
-    org_api: OptScaleOrgAPI = Depends(),
-    auth_client: OptScaleAuth = Depends(get_auth_client),
-    jwt_payload: dict = Depends(JWTBearer()),
+    auth_client: Annotated[OptScaleAuth, Depends(get_auth_client)],
+    org_api: Annotated[OptScaleOrgAPI, Depends()],
 ):
     """
     Create a new FinOPs organization.
 
-    :param jwt_payload: A dictionary that will contain the access token or an error
     :param data: The input data required to create an organization,including the user_id
     :param org_api: An instance of OptScaleOrgAPI for managing organization operations.
                     Dependency injection via `Depends()`.
