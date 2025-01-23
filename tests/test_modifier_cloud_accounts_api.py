@@ -18,7 +18,7 @@ def mock_add_cloud_account():
     patcher.stop()
 
 
-async def test_create_datasource(
+async def test_link_cloud_account(
     async_client: AsyncClient,
     test_data: dict,
     mock_add_cloud_account,
@@ -31,7 +31,9 @@ async def test_create_datasource(
     mock_add_cloud_account.return_value = mocked_response
 
     response = await async_client.post(
-        "/cloud_accounts", json=payload, headers={"Authorization": "Bearer good token"}
+        "/organizations/my_org_id/cloud_accounts",
+        json=payload,
+        headers={"Authorization": "Bearer good token"},
     )
     assert response.status_code == 201
     got = response.json()
@@ -54,7 +56,9 @@ async def test_create_datasource_with_inject_conf(
     mock_add_cloud_account.return_value = mocked_response
 
     response = await async_client.post(
-        "/cloud_accounts", json=payload, headers={"Authorization": "Bearer good token"}
+        "/organizations/my_org_id/cloud_accounts",
+        json=payload,
+        headers={"Authorization": "Bearer good token"},
     )
     assert response.status_code == 201
     got = response.json()
@@ -73,7 +77,9 @@ async def test_not_allowed_datasource_exception_handling(
     payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
     payload["type"] = "blalbla"
     response = await async_client.post(
-        "/cloud_accounts", json=payload, headers={"Authorization": "Bearer good token"}
+        "/organizations/my_org_id/cloud_accounts",
+        json=payload,
+        headers={"Authorization": "Bearer good token"},
     )
     assert response.status_code == 403
     got = response.json()
@@ -96,7 +102,7 @@ async def test_exception_handling(
     payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
     with caplog.at_level(logging.ERROR):
         response = await async_client.post(
-            "/cloud_accounts",
+            "/organizations/my_org_id/cloud_accounts",
             json=payload,
             headers={"Authorization": "Bearer good token"},
         )
@@ -125,7 +131,7 @@ async def test_no_auth(
     payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
     with caplog.at_level(logging.ERROR):
         response = await async_client.post(
-            "/cloud_accounts",
+            "/organizations/my_org_id/cloud_accounts",
             json=payload,
             headers={},
         )

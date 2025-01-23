@@ -117,7 +117,7 @@ class CloudStrategyManager:
         configuration
         :param org_id: The user's organization ID to be linked with the Cloud Account.
         :param user_access_token: The user's access token
-        :return: If the datasource is created, a dict like this one will be returned
+        :return: If the cloud account is linked, a dict like this one will be returned
         {
             "deleted_at": 0,
             "id": "8e8501fa-403a-477b-bd6f-e7569f277f54",

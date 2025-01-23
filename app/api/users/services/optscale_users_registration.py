@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Annotated
 
 from fastapi import Depends
 
@@ -31,7 +32,7 @@ async def validate_user_invitation(email: str) -> bool:
 
 
 async def validate_email_and_add_invited_user(
-    optscale_user_api: Depends(OptScaleUserAPI),
+    optscale_user_api: Annotated[OptScaleUserAPI, Depends()],
     email: str,
     display_name: str,
     password: str,
@@ -84,7 +85,7 @@ async def validate_email_and_add_invited_user(
 
 
 async def add_new_user(
-    optscale_user_api: Depends(OptScaleUserAPI),
+    optscale_user_api: Annotated[OptScaleUserAPI, Depends()],
     email: str,
     display_name: str,
     password: str,
