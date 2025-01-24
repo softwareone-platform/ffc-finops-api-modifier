@@ -11,7 +11,6 @@ class AddCloudAccount(BaseModel):
     config: dict[str, Any]
     auto_import: bool = Field(default=True)
     process_recommendations: bool = Field(default=True)
-    org_id: str
     model_config = {
         "json_schema_extra": {
             "examples": [

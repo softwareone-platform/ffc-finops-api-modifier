@@ -1,4 +1,5 @@
 import logging
+from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends
 from fastapi import status as http_status
@@ -25,7 +26,7 @@ router = APIRouter()
 
 
 def get_bearer_token(
-    auth: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    auth: Annotated[HTTPAuthorizationCredentials, Depends(bearer_scheme)],
 ) -> str:
     return auth.credentials  # Return the raw token
 
@@ -38,10 +39,10 @@ async def decline_invitation(
     invite_id: str,
     data: DeclineInvitation,
     background_task: BackgroundTasks,
-    invitation_api: OptScaleInvitationAPI = Depends(),
-    org_api: OptScaleOrgAPI = Depends(),
-    user_api: OptScaleUserAPI = Depends(),
-    invited_user_token: str = Depends(get_bearer_token),
+    invitation_api: Annotated[OptScaleInvitationAPI, Depends()],
+    org_api: Annotated[OptScaleOrgAPI, Depends()],
+    user_api: Annotated[OptScaleUserAPI, Depends()],
+    invited_user_token: Annotated[str, Depends(get_bearer_token)],
 ):
     try:
         user_id = data.user_id
