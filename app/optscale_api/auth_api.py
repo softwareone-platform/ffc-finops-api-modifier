@@ -35,7 +35,9 @@ class OptScaleAuth:
     def __init__(self):
         self.api_client = APIClient(base_url=settings.opt_scale_api_url)
 
-    async def validate_authorization(self, bearer_token: str, org_id: str):
+    async def check_user_allowed_to_create_cloud_account(
+        self, bearer_token: str, org_id: str
+    ) -> None | Exception:
         """
          It validates the given bearer_token by making a request
          to auth/v2/authorize.
@@ -47,8 +49,8 @@ class OptScaleAuth:
         Result: The service will return a 403 with an indication about a
         not-allowed cloud type instead of processing the wrong authorization
         as the first thing.
-        :param bearer_token:
-        :param org_id:
+        :param bearer_token: The user access's token
+        :param org_id: The org ID that owned by the user identified by the bearer_token
         :return:
         """
         payload = {
@@ -63,8 +65,6 @@ class OptScaleAuth:
         if response.get("error"):
             logger.error("Failed validate the given bearer token")
             return raise_api_response_exception(response)
-
-        return response.get("data")
 
     async def obtain_user_auth_token_with_admin_api_key(
         self, user_id: str, admin_api_key: str

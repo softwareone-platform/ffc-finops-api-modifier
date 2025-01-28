@@ -18,7 +18,9 @@ def opt_scale_auth():
 
 @pytest.fixture
 def mock_auth_post():
-    patcher = patch.object(OptScaleAuth, "validate_authorization", new=AsyncMock())
+    patcher = patch.object(
+        OptScaleAuth, "check_user_allowed_to_create_cloud_account", new=AsyncMock()
+    )
     mock = patcher.start()
     yield mock
     patcher.stop()

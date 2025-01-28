@@ -30,10 +30,10 @@ async def test_authorize_valid_bearer_token(
 ):
     mock_response = test_data["auth_token"]["authorize"]["valid_response"]
     mock_post.return_value = mock_response
-    response = await opt_scale_auth.validate_authorization(
+    response = await opt_scale_auth.check_user_allowed_to_create_cloud_account(
         bearer_token="good token", org_id="my_org_id"
     )
-    assert response == mock_response.get("data")
+    assert response is None
     mock_post.assert_called_once_with(
         endpoint="/auth/v2/authorize",
         headers={
@@ -54,7 +54,7 @@ async def test_authorize_bearer_token_with_error(
     mock_post.return_value = mock_response
     with caplog.at_level(logging.ERROR):
         with pytest.raises(APIResponseError) as exc_info:
-            await opt_scale_auth.validate_authorization(
+            await opt_scale_auth.check_user_allowed_to_create_cloud_account(
                 bearer_token="no good token", org_id="my_org_id"
             )
         exception = exc_info.value
