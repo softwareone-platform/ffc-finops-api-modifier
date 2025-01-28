@@ -58,7 +58,7 @@ class CloudStrategyConfiguration:
                 error_code="OE0436",
                 reason=f"{self.type} is not supported",
                 params=[f"{self.type}"],
-                status_code=http_status.HTTP_403_FORBIDDEN,
+                status_code=http_status.HTTP_400_BAD_REQUEST,
             )
 
         strategy_class = self.ALLOWED_PROVIDERS[self.type]
