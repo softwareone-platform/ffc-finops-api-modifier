@@ -110,8 +110,16 @@ async def link_cloud_account(
     org_id: str,
     data: AddCloudAccount,
     user_access_token: Annotated[str, Depends(get_bearer_token)],
+    auth_client: Annotated[OptScaleAuth, Depends(get_auth_client)],
 ):
     try:
+        # here, we need to validate the bearer token to ensure that any authorization
+        # related errors will be checked first. In case of an invalid/expired token,
+        # an APIResponseError with a http statu 401 will re raised
+
+        await auth_client.validate_authorization(
+            bearer_token=user_access_token, org_id=org_id
+        )
         response = await link_cloud_account_to_org(
             name=data.name,
             type=data.type,

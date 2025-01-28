@@ -7,6 +7,7 @@ from app.core.api_client import APIClient
 from app.core.exceptions import UserAccessTokenError, raise_api_response_exception
 
 AUTH_TOKEN_ENDPOINT = "/auth/v2/tokens"  # nosec B105
+AUTH_TOKEN_AUTHORIZE_ENDPOINT = "/auth/v2/authorize"  # nosec B105"
 logger = logging.getLogger(__name__)
 
 
@@ -33,6 +34,37 @@ def build_bearer_token_header(bearer_token: str) -> dict[str, str]:
 class OptScaleAuth:
     def __init__(self):
         self.api_client = APIClient(base_url=settings.opt_scale_api_url)
+
+    async def validate_authorization(self, bearer_token: str, org_id: str):
+        """
+         It validates the given bearer_token by making a request
+         to auth/v2/authorize.
+         This is used to protect the /organization/{org_id}/cloud_accounts
+         endpoint from being consumed with a not valid bearer token and fix
+         the following corner case scenario:
+         - Wrong Authentication Bearer Token or an expired one.
+        -  Wrong value in the type field of the payload.
+        Result: The service will return a 403 with an indication about a
+        not-allowed cloud type instead of processing the wrong authorization
+        as the first thing.
+        :param bearer_token:
+        :param org_id:
+        :return:
+        """
+        payload = {
+            "action": "MANAGE_CLOUD_CREDENTIALS",
+            "resource_type": "organization",
+            "uuid": org_id,
+        }
+        headers = build_bearer_token_header(bearer_token=bearer_token)
+        response = await self.api_client.post(
+            endpoint=AUTH_TOKEN_AUTHORIZE_ENDPOINT, headers=headers, data=payload
+        )
+        if response.get("error"):
+            logger.error("Failed validate the given bearer token")
+            return raise_api_response_exception(response)
+
+        return response.get("data")
 
     async def obtain_user_auth_token_with_admin_api_key(
         self, user_id: str, admin_api_key: str

@@ -123,6 +123,22 @@
         "error": "HTTP error: 401 - {\"error\": {\"status_code\": 401, \"error_code\": \"OE0235\", \"reason\": \"Unauthorized\", \"params\": []}}",
         "status_code": 401
       }
+    },
+    "authorize": {
+      "error_response": {"data":
+        {"error": {
+        "error_code": "OA0010", "params": [],
+        "reason": "Token not found", "status_code": 401}},
+        "error": "HTTP error: 401 - {\"error\": {\"status_code\": 401, \"error_code\": \"OA0010\", \"reason\": \"Token not found\", \"params\": []}}",
+        "status_code": 401},
+      "valid_response": {"data":
+      {"assignments": [
+        {"id": "user_id",
+          "resource": "org_id",
+          "role": "Manager",
+          "type": "organization",
+          "user": "peter.parker@spiderman.com"}],
+          "status": "ok"}, "status_code": 200}
     }
   },
   "invitation": {
