@@ -117,7 +117,7 @@ async def link_cloud_account(
         # related errors will be checked first. In case of an invalid/expired token,
         # an APIResponseError with a http statu 401 will re raised
 
-        await auth_client.validate_authorization(
+        await auth_client.check_user_allowed_to_create_cloud_account(
             bearer_token=user_access_token, org_id=org_id
         )
         response = await link_cloud_account_to_org(
