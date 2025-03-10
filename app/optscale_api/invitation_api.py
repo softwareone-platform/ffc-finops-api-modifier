@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class OptScaleInvitationAPI:
     def __init__(self):
-        self.api_client = APIClient(base_url=settings.opt_scale_api_url)
+        self.api_client = APIClient(base_url=settings.opt_scale_rest_api_url)
 
     async def decline_invitation(self, user_access_token: str, invitation_id: str):
         """

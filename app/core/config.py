@@ -12,7 +12,8 @@ class Settings(BaseSettings):
     secret: str
     issuer: str
     audience: str
-    opt_scale_api_url: str
+    opt_scale_auth_api_url: str
+    opt_scale_rest_api_url: str
     admin_token: str
     api_v1_prefix: str = "/modifier/v1"
     debug: bool = False

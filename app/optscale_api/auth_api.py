@@ -33,7 +33,7 @@ def build_bearer_token_header(bearer_token: str) -> dict[str, str]:
 
 class OptScaleAuth:
     def __init__(self):
-        self.api_client = APIClient(base_url=settings.opt_scale_api_url)
+        self.api_client = APIClient(base_url=settings.opt_scale_auth_api_url)
 
     async def check_user_allowed_to_create_cloud_account(
         self, bearer_token: str, org_id: str
