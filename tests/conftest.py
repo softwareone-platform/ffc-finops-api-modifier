@@ -31,9 +31,7 @@ def override_jwt_bearer():
 @pytest_asyncio.fixture
 async def async_client():
     transport = ASGITransport(app=app)
-    async with AsyncClient(
-        transport=transport, base_url=f"http://{settings.api_v1_prefix}"
-    ) as client:
+    async with AsyncClient(transport=transport, base_url="http://") as client:
         yield client
 
 

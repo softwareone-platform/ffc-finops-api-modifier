@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class OptScaleInvitationAPI:
     def __init__(self):
-        self.api_client = APIClient(base_url=settings.opt_scale_rest_api_url)
+        self.api_client = APIClient(base_url=settings.optscale_rest_api_url)
 
     async def decline_invitation(self, user_access_token: str, invitation_id: str):
         """
@@ -87,7 +87,9 @@ class OptScaleInvitationAPI:
             raise ValueError("Both 'user_access_token' and 'email' cannot be None.")
 
         if email is not None:
-            headers = build_admin_api_key_header(admin_api_key=settings.admin_token)
+            headers = build_admin_api_key_header(
+                admin_api_key=settings.optscale_cluster_secret
+            )
             params = {"email": email}
         else:
             headers = build_bearer_token_header(bearer_token=user_access_token)

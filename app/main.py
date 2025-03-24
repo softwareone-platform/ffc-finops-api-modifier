@@ -13,9 +13,9 @@ from app.router.api_v1.endpoints import api_router
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title=settings.project_name,
-    version=settings.version,
-    openapi_url=f"{settings.api_v1_prefix}/openapi.json",
+    title="FinOps for Cloud API Modifier",
+    version="4.0.0",
+    root_path="/modifier/v1",
     debug=settings.debug,
 )
 # Todo: remove * from allow_origins
@@ -28,7 +28,7 @@ app.add_middleware(
 )
 
 
-app.include_router(api_router, prefix=settings.api_v1_prefix)
+app.include_router(api_router)
 app.add_middleware(LogRequestMiddleware)
 
 

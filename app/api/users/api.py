@@ -93,7 +93,7 @@ async def create_user(
                 email=str(data.email),
                 display_name=data.display_name,
                 password=data.password,
-                admin_token=settings.admin_token,
+                optscale_cluster_secret=settings.optscale_cluster_secret,
                 optscale_user_api=optscale_user_api,
             )
             logger.info(f"Invited User successfully registered: {response}")
@@ -102,7 +102,7 @@ async def create_user(
                 email=str(data.email),
                 display_name=data.display_name,
                 password=data.password,
-                admin_token=settings.admin_token,
+                optscale_cluster_secret=settings.optscale_cluster_secret,
                 optscale_user_api=optscale_user_api,
             )
             logger.info(f"User successfully created: {response}")

@@ -8,13 +8,13 @@ services:
       dockerfile: dev.Dockerfile
     image: ffc-api-modifier:local
     working_dir: /app
-    command: bash -c "uv run fastapi dev --host 0.0.0.0 --port 8000"
+    command: bash -c "uv run fastapi dev --host 0.0.0.0 --port 8095"
     volumes:
       - .:/app
     env_file:
       - .env
     ports:
-      - "${FFC_MODIFIER_PORT:-8000}:8000"
+      - "${FFC_MODIFIER_PORT:-8095}:8095"
 
   app_test:
     container_name: ffc-api-modifier-test

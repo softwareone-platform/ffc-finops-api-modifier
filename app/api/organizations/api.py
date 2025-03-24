@@ -89,7 +89,9 @@ async def get_orgs(
     try:
         # send request with the Secret token to the OptScale API
         response = await optscale_api.access_user_org_list_with_admin_key(
-            user_id=user_id, admin_api_key=settings.admin_token, auth_client=auth_client
+            user_id=user_id,
+            admin_api_key=settings.optscale_cluster_secret,
+            auth_client=auth_client,
         )
         return JSONResponse(
             status_code=response.get("status_code", http_status.HTTP_200_OK),
@@ -198,7 +200,7 @@ async def create_orgs(
             org_name=data.org_name,
             user_id=data.user_id,
             currency=data.currency,
-            admin_api_key=settings.admin_token,
+            admin_api_key=settings.optscale_cluster_secret,
             auth_client=auth_client,
         )
         return JSONResponse(

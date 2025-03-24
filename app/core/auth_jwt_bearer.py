@@ -17,11 +17,11 @@ from app.core.exceptions import (
     AuthException,
 )
 
-JWT_SECRET = settings.secret
-JWT_ALGORITHM = settings.algorithm
-JWT_AUDIENCE = settings.audience
-JWT_ISSUER = settings.issuer
-JWT_LEEWAY = settings.leeway
+JWT_SECRET = settings.jwt_secret
+JWT_ALGORITHM = "HS256"
+JWT_AUDIENCE = "modifier"
+JWT_ISSUER = "SWO"
+JWT_LEEWAY = settings.jwt_leeway
 
 logger = logging.getLogger(__name__)
 

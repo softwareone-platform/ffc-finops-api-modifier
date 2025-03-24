@@ -36,7 +36,7 @@ async def validate_email_and_add_invited_user(
     email: str,
     display_name: str,
     password: str,
-    admin_token: str,
+    optscale_cluster_secret: str,
 ) -> dict | Exception:
     """
     It adds a new user to OptScale ONLY if an invitation has been
@@ -49,7 +49,7 @@ async def validate_email_and_add_invited_user(
     :param email: the email address of the invited user
     :param display_name: The user's name to add
     :param password: The user's password to add
-    :param admin_token: The Secret API Key required to run this operation
+    :param optscale_cluster_secret: The Secret API Key required to run this operation
     :return:
     A dict like
      {
@@ -78,7 +78,7 @@ async def validate_email_and_add_invited_user(
         email=email,
         display_name=display_name,
         password=password,
-        admin_api_key=admin_token,
+        admin_api_key=optscale_cluster_secret,
         verified=False,
     )
     return response
@@ -89,7 +89,7 @@ async def add_new_user(
     email: str,
     display_name: str,
     password: str,
-    admin_token: str,
+    optscale_cluster_secret: str,
 ) -> dict | Exception:
     """
         It adds a new user to OptScale. The new user will be already verified
@@ -98,7 +98,7 @@ async def add_new_user(
         :param email: The user's email address
         :param display_name: The user's name to add
         :param password: The user's password to add
-        :param admin_token: The Secret API Key required to run this operation
+        :param optscale_cluster_secret: The Secret API Key required to run this operation
         :return: A dict like
             {
         "created_at": 1737449293,
@@ -121,7 +121,7 @@ async def add_new_user(
         email=email,
         display_name=display_name,
         password=password,
-        admin_api_key=admin_token,
+        admin_api_key=optscale_cluster_secret,
         verified=True,
     )
     return response
