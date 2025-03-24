@@ -5,13 +5,17 @@ import jwt
 import pytest
 
 from app import settings
-from app.core.auth_jwt_bearer import JWTBearer, decode_jwt, verify_jwt
+from app.core.auth_jwt_bearer import (
+    JWT_ALGORITHM,
+    JWT_AUDIENCE,
+    JWT_ISSUER,
+    JWTBearer,
+    decode_jwt,
+    verify_jwt,
+)
 from app.core.exceptions import AuthException
 
-JWT_SECRET = settings.secret
-JWT_ALGORITHM = settings.algorithm
-JWT_ISSUER = settings.issuer
-JWT_AUDIENCE = settings.audience
+JWT_SECRET = settings.jwt_secret
 SUBJECT = "test"
 
 

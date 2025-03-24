@@ -27,7 +27,7 @@ ORG_FETCHING_ERROR = "An error occurred getting organizations for user {}."
 
 class OptScaleOrgAPI:
     def __init__(self):
-        self.api_client = APIClient(base_url=settings.opt_scale_rest_api_url)
+        self.api_client = APIClient(base_url=settings.optscale_rest_api_url)
 
     async def get_user_org_list(
         self, user_access_token: str

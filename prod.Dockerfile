@@ -45,7 +45,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Running gunicorn with Uvicorn workers
 CMD [ \
     "gunicorn", \
-    "-b", ":8000", \
+    "-b", ":8095", \
     "--capture-output", \
     "--error-logfile", "-", \
     "--access-logfile", "-", \

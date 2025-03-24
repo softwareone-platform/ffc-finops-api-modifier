@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class OptScaleUserAPI:
     def __init__(self):
-        self.api_client = APIClient(base_url=settings.opt_scale_auth_api_url)
+        self.api_client = APIClient(base_url=settings.optscale_auth_api_url)
 
     # todo: check the password lenght and strength
     async def create_user(

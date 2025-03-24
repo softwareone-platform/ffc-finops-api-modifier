@@ -3,12 +3,9 @@ import time
 import jwt
 
 from app import settings
+from app.core.auth_jwt_bearer import JWT_ALGORITHM, JWT_AUDIENCE, JWT_ISSUER
 
-JWT_SECRET = settings.secret
-JWT_ALGORITHM = settings.algorithm
-JWT_ISSUER = settings.issuer
-JWT_AUDIENCE = settings.audience
-
+JWT_SECRET = settings.jwt_secret
 SUBJECT = "test"
 
 

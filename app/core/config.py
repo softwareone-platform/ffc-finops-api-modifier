@@ -7,20 +7,12 @@ PROJECT_ROOT = pathlib.Path(__file__).parent.parent
 
 class Settings(BaseSettings):
     # Base
-    public_url: str
-    version: str
-    secret: str
-    issuer: str
-    audience: str
-    opt_scale_auth_api_url: str
-    opt_scale_rest_api_url: str
-    admin_token: str
-    api_v1_prefix: str = "/modifier/v1"
+    jwt_secret: str
+    jwt_leeway: float = 30.0
+    optscale_auth_api_url: str
+    optscale_rest_api_url: str
+    optscale_cluster_secret: str
     debug: bool = False
-    project_name: str = "CloudSpend API Modifier"
-    description: str = "Service to provide custom users and org management"
-    algorithm: str = "HS256"
-    leeway: float = 30.0
     default_request_timeout: int = 10  # API Client
 
     model_config = SettingsConfigDict(
