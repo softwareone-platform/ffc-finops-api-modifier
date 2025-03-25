@@ -17,17 +17,17 @@ from app.optscale_api.helpers.auth_tokens_dependency import (
     get_user_access_token,
 )
 
-ORG_ENDPOINT = "/restapi/v2/organizations"
 logger = logging.getLogger(__name__)
 
-ORG_CREATION_ERROR = "An error occurred creating an organization for user {}."
+ORG_ENDPOINT = "/organizations"
 
+ORG_CREATION_ERROR = "An error occurred creating an organization for user {}."
 ORG_FETCHING_ERROR = "An error occurred getting organizations for user {}."
 
 
 class OptScaleOrgAPI:
     def __init__(self):
-        self.api_client = APIClient(base_url=settings.optscale_rest_api_url)
+        self.api_client = APIClient(base_url=settings.optscale_rest_api_base_url)
 
     async def get_user_org_list(
         self, user_access_token: str

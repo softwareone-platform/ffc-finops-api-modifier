@@ -112,7 +112,7 @@ async def test_create_duplicate_user(caplog, optscale_api, test_data: dict, mock
                 admin_api_key="test_key",
             )
             mock_post.assert_called_once_with(
-                endpoint="/auth/v2/users",
+                endpoint="/users",
                 data={
                     "email": EMAIL,
                     "display_name": DISPLAY_NAME,

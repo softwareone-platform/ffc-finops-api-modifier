@@ -63,7 +63,7 @@ async def test_create_valid_user(optscale_api, mock_post, test_data: dict):
             got[k] == v
         ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
     mock_post.assert_called_once_with(
-        endpoint="/auth/v2/users",
+        endpoint="/users",
         headers={"Secret": "test_key"},
         data={
             "email": EMAIL,
@@ -88,7 +88,7 @@ async def test_create_duplicate_user(caplog, optscale_api, mock_post, test_data:
                 admin_api_key="test_key",
             )
             mock_post.assert_called_once_with(
-                endpoint="/auth/v2/users",
+                endpoint="/users",
                 data={
                     "email": EMAIL,
                     "display_name": DISPLAY_NAME,
@@ -117,7 +117,7 @@ async def test_valid_get_user_by_id(
             got[k] == v
         ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
     mock_get.assert_called_once_with(
-        endpoint=f"/auth/v2/users/{user_id}", headers={"Secret": ADMIN_API_KEY}
+        endpoint=f"/users/{user_id}", headers={"Secret": ADMIN_API_KEY}
     )
 
 
@@ -135,7 +135,7 @@ async def test_invalid_get_user_by_id(optscale_api, mock_get, user_id=INVALID_US
     with pytest.raises(APIResponseError, match=""):  # noqa: PT012
         await optscale_api.get_user_by_id(user_id=user_id, admin_api_key=ADMIN_API_KEY)
         mock_get.assert_called_once_with(
-            endpoint=f"/auth/v2/users/{user_id}", headers={"Secret": ADMIN_API_KEY}
+            endpoint=f"/users/{user_id}", headers={"Secret": ADMIN_API_KEY}
         )
 
 
@@ -154,7 +154,7 @@ async def test_get_user_with_invalid_admin_api_key(optscale_api, mock_get):
         await optscale_api.get_user_by_id(user_id=USER_ID, admin_api_key="invalid_key")
 
         mock_get.assert_called_once_with(
-            endpoint=f"/auth/v2/users/{USER_ID}", headers={"Secret": "invalid_key"}
+            endpoint=f"/users/{USER_ID}", headers={"Secret": "invalid_key"}
         )
 
 
@@ -164,7 +164,7 @@ async def test_delete_user(optscale_api, mock_delete, caplog):
     await optscale_api.delete_user(user_id="user_id", admin_api_key="test_key")
     assert "User user_id successfully deleted" == caplog.messages[0]
     mock_delete.assert_called_once_with(
-        endpoint="/auth/v2/users/user_id", headers={"Secret": "test_key"}
+        endpoint="/users/user_id", headers={"Secret": "test_key"}
     )
 
 

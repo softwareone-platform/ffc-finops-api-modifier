@@ -84,7 +84,7 @@ async def test_create_user_org(
 
     # Assert that mock_post was called with expected arguments
     mock_api_client_post.assert_called_once_with(
-        endpoint="/restapi/v2/organizations",
+        endpoint="/organizations",
         data={"name": "MyOrg", "currency": "USD"},
         headers={"Authorization": "Bearer good token"},
     )
@@ -146,7 +146,7 @@ async def test_get_user_org_empty_response(
     )
     assert result == {"organizations": []}
     mock_api_client_get.assert_called_once_with(
-        endpoint="/restapi/v2/organizations",
+        endpoint="/organizations",
         headers={"Authorization": "Bearer good token"},
     )
 

@@ -35,7 +35,7 @@ async def test_authorize_valid_bearer_token(
     )
     assert response is None
     mock_post.assert_called_once_with(
-        endpoint="/auth/v2/authorize",
+        endpoint="/authorize",
         headers={
             "Authorization": "Bearer good token",
         },
@@ -64,7 +64,7 @@ async def test_authorize_bearer_token_with_error(
         # check the logging message printed by the obtain_user_auth_token_with_admin_api_key
         assert "Failed validate the given bearer token" == caplog.messages[0]
         mock_post.assert_called_once_with(
-            endpoint="/auth/v2/authorize",
+            endpoint="/authorize",
             headers={
                 "Authorization": "Bearer no good token",
             },
@@ -86,7 +86,7 @@ async def test_user_auth_token_with_admin_api_key(
         admin_api_key="f2312f2b-46h0-4456-o0i9-58e64f2j6725",
     )
     mock_post.assert_called_once_with(
-        endpoint="/auth/v2/tokens",
+        endpoint="/tokens",
         headers={
             "Secret": "f2312f2b-46h0-4456-o0i9-58e64f2j6725",
         },
