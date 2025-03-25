@@ -8,13 +8,14 @@ from app.core.exceptions import raise_api_response_exception
 
 from .auth_api import build_admin_api_key_header
 
-AUTH_USERS_ENDPOINT = "/auth/v2/users"
 logger = logging.getLogger(__name__)
+
+AUTH_USERS_ENDPOINT = "/users"
 
 
 class OptScaleUserAPI:
     def __init__(self):
-        self.api_client = APIClient(base_url=settings.optscale_auth_api_url)
+        self.api_client = APIClient(base_url=settings.optscale_auth_api_base_url)
 
     # todo: check the password lenght and strength
     async def create_user(

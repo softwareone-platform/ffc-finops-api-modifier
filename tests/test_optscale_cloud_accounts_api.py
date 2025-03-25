@@ -42,7 +42,7 @@ async def test_create_cloud_account(
 
     # Assert that mock_post was called with expected arguments
     mock_api_client_post.assert_called_once_with(
-        endpoint="/restapi/v2/organizations/ABC-101-DEF-1001/cloud_accounts",
+        endpoint="/organizations/ABC-101-DEF-1001/cloud_accounts",
         data=payload,
         headers={"Authorization": "Bearer good token"},
     )

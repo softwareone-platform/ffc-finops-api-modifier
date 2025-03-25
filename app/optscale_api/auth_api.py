@@ -6,9 +6,10 @@ from app import settings
 from app.core.api_client import APIClient
 from app.core.exceptions import UserAccessTokenError, raise_api_response_exception
 
-AUTH_TOKEN_ENDPOINT = "/auth/v2/tokens"  # nosec B105
-AUTH_TOKEN_AUTHORIZE_ENDPOINT = "/auth/v2/authorize"  # nosec B105"
 logger = logging.getLogger(__name__)
+
+AUTH_TOKEN_ENDPOINT = "/tokens"  # nosec B105
+AUTH_TOKEN_AUTHORIZE_ENDPOINT = "/authorize"  # nosec B105"
 
 
 def build_admin_api_key_header(admin_api_key: str) -> dict[str, str]:
@@ -33,7 +34,7 @@ def build_bearer_token_header(bearer_token: str) -> dict[str, str]:
 
 class OptScaleAuth:
     def __init__(self):
-        self.api_client = APIClient(base_url=settings.optscale_auth_api_url)
+        self.api_client = APIClient(base_url=settings.optscale_auth_api_base_url)
 
     async def check_user_allowed_to_create_cloud_account(
         self, bearer_token: str, org_id: str

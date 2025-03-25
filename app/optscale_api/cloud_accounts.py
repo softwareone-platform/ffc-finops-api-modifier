@@ -10,12 +10,13 @@ from app.optscale_api.auth_api import (
 )
 
 logger = logging.getLogger(__name__)
-CLOUD_ACCOUNT_ENDPOINT = "/restapi/v2/organizations"
+
+CLOUD_ACCOUNT_ENDPOINT = "/organizations"
 
 
 class OptScaleCloudAccountAPI:
     def __init__(self):
-        self.api_client = APIClient(base_url=settings.optscale_rest_api_url)
+        self.api_client = APIClient(base_url=settings.optscale_rest_api_base_url)
 
     async def link_cloud_account_with_org(
         self, user_access_token: str, org_id: str, conf: dict[str, str]

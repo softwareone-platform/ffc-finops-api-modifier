@@ -12,13 +12,14 @@ from app.optscale_api.auth_api import (
     build_bearer_token_header,
 )
 
-INVITATION_ENDPOINT = "/restapi/v2/invites"
 logger = logging.getLogger(__name__)
+
+INVITATION_ENDPOINT = "/invites"
 
 
 class OptScaleInvitationAPI:
     def __init__(self):
-        self.api_client = APIClient(base_url=settings.optscale_rest_api_url)
+        self.api_client = APIClient(base_url=settings.optscale_rest_api_base_url)
 
     async def decline_invitation(self, user_access_token: str, invitation_id: str):
         """

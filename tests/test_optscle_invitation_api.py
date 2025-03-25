@@ -7,7 +7,7 @@ from httpx import AsyncClient
 from app.core.exceptions import APIResponseError
 from app.optscale_api.invitation_api import OptScaleInvitationAPI
 
-INVITATION_ENDPOINT = "/restapi/v2/invites"
+INVITATION_ENDPOINT = "/invites"
 
 
 @pytest.fixture
