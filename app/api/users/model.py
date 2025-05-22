@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, EmailStr, constr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class CreateUserData(BaseModel):
     email: EmailStr
     display_name: str
-    password: constr(min_length=8)
+    password: str
 
 
 class CreateUserResponse(BaseModel):
