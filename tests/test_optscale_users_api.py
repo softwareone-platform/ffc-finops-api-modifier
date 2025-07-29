@@ -99,15 +99,13 @@ async def test_create_duplicate_user(caplog, optscale_api, mock_post, test_data:
     assert "Failed to create the requested user" in caplog.text
 
 
-async def test_valid_get_user_by_id(
-    optscale_api, mock_get, test_data: dict, user_id=USER_ID
-):
+async def test_valid_get_user_by_id(optscale_api, mock_get, test_data: dict):
     mock_response = test_data["user"]["case_create"]["response"]
     mock_response["data"]["token"] = "valid_jwt"
     mock_get.return_value = mock_response
 
     response = await optscale_api.get_user_by_id(
-        user_id=user_id, admin_api_key=ADMIN_API_KEY
+        user_id=USER_ID, admin_api_key=ADMIN_API_KEY
     )
     got = response
     want = test_data["user"]["case_create"]["response"]
@@ -117,25 +115,27 @@ async def test_valid_get_user_by_id(
             got[k] == v
         ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
     mock_get.assert_called_once_with(
-        endpoint=f"/users/{user_id}", headers={"Secret": ADMIN_API_KEY}
+        endpoint=f"/users/{USER_ID}", headers={"Secret": ADMIN_API_KEY}
     )
 
 
-async def test_invalid_get_user_by_id(optscale_api, mock_get, user_id=INVALID_USER_ID):
+async def test_invalid_get_user_by_id(optscale_api, mock_get):
     mock_response = {
         "error": {
             "status_code": 404,
             "error_code": "OA0043",
             "reason": f"Failed to get the user {INVALID_USER_ID} data from OptScale",
-            "params": [user_id],
+            "params": [INVALID_USER_ID],
         }
     }
 
     mock_get.return_value = mock_response
     with pytest.raises(APIResponseError, match=""):  # noqa: PT012
-        await optscale_api.get_user_by_id(user_id=user_id, admin_api_key=ADMIN_API_KEY)
+        await optscale_api.get_user_by_id(
+            user_id=INVALID_USER_ID, admin_api_key=ADMIN_API_KEY
+        )
         mock_get.assert_called_once_with(
-            endpoint=f"/users/{user_id}", headers={"Secret": ADMIN_API_KEY}
+            endpoint=f"/users/{INVALID_USER_ID}", headers={"Secret": ADMIN_API_KEY}
         )
 
 

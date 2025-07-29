@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 import jwt
 from fastapi import Request
@@ -26,7 +25,7 @@ JWT_LEEWAY = settings.jwt_leeway
 logger = logging.getLogger(__name__)
 
 
-def decode_jwt(token: str) -> Optional[dict]:  # noqa: UP007
+def decode_jwt(token: str) -> dict | None:
     """
     Decodes a JWT token and validates its critical claims,
     including time-based and issuer/audience claims.
