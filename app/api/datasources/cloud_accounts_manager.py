@@ -35,7 +35,7 @@ class CloudStrategyManager:
                 key: value
                 for key, value in config.__dict__.items()
                 if key in ["name", "type", "config"]
-            }  # noqa: E501
+            }
             return self.strategy.link_to_organization(
                 config=datasource_conf, org_id=org_id
             )

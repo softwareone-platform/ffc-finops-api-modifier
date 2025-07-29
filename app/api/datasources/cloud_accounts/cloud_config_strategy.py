@@ -6,7 +6,7 @@ from app.core.exceptions import CloudAccountConfigError
 logger = logging.getLogger(__name__)
 
 
-class CloudConfigStrategy(ABC):
+class CloudConfigStrategy(ABC):  # pragma: no cover
     @abstractmethod
     def required_fields(self) -> list:
         pass
@@ -18,5 +18,5 @@ class CloudConfigStrategy(ABC):
                 raise CloudAccountConfigError(f"The {field} is required ")
 
     @abstractmethod
-    def link_to_organization(self, config: dict, org_id: str):
+    def link_to_organization(self, config: dict, org_id: str):  # pragma: no cover
         pass

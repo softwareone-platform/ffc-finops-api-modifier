@@ -51,7 +51,6 @@ async def get_orgs(
     with the OptScale API.
     It returns the organization data as a JSON response.
 
-    :param jwt_payload: A dictionary that will contain the access token or an error
     :param user_id:  The ID of the user whose organization data is to be retrieved.
     :param optscale_api: An instance of OptScaleOrgAPI for interacting with the organization API.
                         Dependency injection via `Depends()`.
