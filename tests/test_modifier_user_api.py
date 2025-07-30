@@ -37,9 +37,9 @@ async def test_create_user_with_invalid_token(
     response = await async_client.post(
         "/users", json=payload, headers={"Authorization": token}
     )
-    assert (
-        response.status_code == expected_status
-    ), f"Expected {expected_status} for token: {token}"
+    assert response.status_code == expected_status, (
+        f"Expected {expected_status} for token: {token}"
+    )
 
 
 async def test_create_user_with_valid_authentication(
@@ -63,9 +63,9 @@ async def test_create_user_with_valid_authentication(
     want = test_data["user"]["case_create"]["response"]["data"]
     want["token"] = jwt_token
     for k, v in want.items():
-        assert (
-            got[k] == v
-        ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        assert got[k] == v, (
+            f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        )
 
 
 async def test_create_user_exception_handling(
@@ -87,8 +87,8 @@ async def test_create_user_exception_handling(
         )
 
     # Verify the response status and content
-    assert (
-        response.status_code == 403
-    ), "Expected 403 Forbidden when an exception occurs in user creation"
+    assert response.status_code == 403, (
+        "Expected 403 Forbidden when an exception occurs in user creation"
+    )
     got = response.json()
     assert got.get("error").get("reason") == "Test Exception"

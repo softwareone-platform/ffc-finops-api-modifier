@@ -59,9 +59,9 @@ async def test_create_valid_user(optscale_api, mock_post, test_data: dict):
     want = test_data["user"]["case_create"]["response"]
     want["data"]["token"] = "valid_jwt"
     for k, v in want.items():
-        assert (
-            got[k] == v
-        ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        assert got[k] == v, (
+            f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        )
     mock_post.assert_called_once_with(
         endpoint="/users",
         headers={"Secret": "test_key"},
@@ -111,9 +111,9 @@ async def test_valid_get_user_by_id(optscale_api, mock_get, test_data: dict):
     want = test_data["user"]["case_create"]["response"]
     want["data"]["token"] = "valid_jwt"
     for k, v in want.items():
-        assert (
-            got[k] == v
-        ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        assert got[k] == v, (
+            f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        )
     mock_get.assert_called_once_with(
         endpoint=f"/users/{USER_ID}", headers={"Secret": ADMIN_API_KEY}
     )

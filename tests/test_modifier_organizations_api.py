@@ -31,9 +31,9 @@ async def test_create_org_no_authentication(async_client: AsyncClient, test_data
     payload = test_data["org"]["case_create"]["payload"]
     # Send request without authentication header
     response = await async_client.post("/organizations", json=payload)
-    assert (
-        response.status_code == 401
-    ), "Expected 401 when no authentication is provided"
+    assert response.status_code == 401, (
+        "Expected 401 when no authentication is provided"
+    )
     got = response.json()
     assert got.get("reason") == "Invalid authorization scheme."
 
@@ -59,9 +59,9 @@ async def test_create_org_with_invalid_token(
     response = await async_client.post(
         "/organizations", json=payload, headers={"Authorization": token}
     )
-    assert (
-        response.status_code == expected_status
-    ), f"Expected {expected_status} for token: {token}"
+    assert response.status_code == expected_status, (
+        f"Expected {expected_status} for token: {token}"
+    )
 
 
 async def test_create_org_with_valid_token(
@@ -82,9 +82,9 @@ async def test_create_org_with_valid_token(
     got = response.json()
     want = test_data["org"]["case_create"]["response"]["data"]
     for k, v in want.items():
-        assert (
-            got[k] == v
-        ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        assert got[k] == v, (
+            f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        )
 
 
 async def test_create_org_exception_handling(
@@ -106,18 +106,18 @@ async def test_create_org_exception_handling(
         )
 
     # Verify the response status and content
-    assert (
-        response.status_code == 403
-    ), "Expected 403 Forbidden when an exception occurs in user creation"
+    assert response.status_code == 403, (
+        "Expected 403 Forbidden when an exception occurs in user creation"
+    )
     got = response.json()
     assert got.get("error") == "Test exception"
 
 
 async def test_get_org_no_authentication(async_client: AsyncClient, test_data: dict):
     response = await async_client.get("/organizations?user_id='myuserid'")
-    assert (
-        response.status_code == 401
-    ), "Expected 401 when no authentication is provided"
+    assert response.status_code == 401, (
+        "Expected 401 when no authentication is provided"
+    )
     got = response.json()
     assert got.get("reason") == "Invalid authorization scheme."
 

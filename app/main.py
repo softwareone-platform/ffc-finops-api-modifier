@@ -38,9 +38,9 @@ async def jwt_bearer_exception_handler(request: Request, exc: AuthException):
         status_code=401,
         content={
             "error": f"{exc.title}",
-            "error_code": f"{exc.error.get("error_code","")}",
+            "error_code": f"{exc.error.get('error_code', '')}",
             "params": [],
-            "reason": f"{exc.error.get("reason", "Wrong Authentication")}",
+            "reason": f"{exc.error.get('reason', 'Wrong Authentication')}",
         },
     )
 

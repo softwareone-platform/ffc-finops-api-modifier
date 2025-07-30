@@ -54,9 +54,9 @@ async def test_link_cloud_account(
     assert response.status_code == 201
     got = response.json()
     for k, v in want.items():
-        assert (
-            got[k] == v
-        ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        assert got[k] == v, (
+            f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        )
 
 
 async def test_create_datasource_with_inject_conf(
@@ -79,9 +79,9 @@ async def test_create_datasource_with_inject_conf(
     assert response.status_code == 201
     got = response.json()
     for k, v in want.items():
-        assert (
-            got[k] == v
-        ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        assert got[k] == v, (
+            f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        )
 
 
 async def test_not_allowed_datasource_exception_handling(
