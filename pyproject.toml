@@ -21,9 +21,10 @@ dependencies = [
     "uvloop==0.21.*",
     "uvicorn-worker==0.2.*",
 ]
-[tool.poetry]
-_bounds = "major"
 [tool.uv]
+package = true
+preview = true
+add-bounds = "major"
 dev-dependencies = [
     "pydevd>=3.2.2,<4",
     "ipdb>=0.13,<1",
