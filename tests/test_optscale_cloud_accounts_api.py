@@ -36,9 +36,9 @@ async def test_create_cloud_account(
     got = response
     want = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["response"]
     for k, v in want.items():
-        assert (
-            got[k] == v
-        ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        assert got[k] == v, (
+            f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        )
 
     # Assert that mock_post was called with expected arguments
     mock_api_client_post.assert_called_once_with(

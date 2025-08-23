@@ -64,9 +64,9 @@ async def test_register_invited_user(
     assert response.status_code == 201
     got = response.json()
     for k, v in want.items():
-        assert (
-            got[k] == v
-        ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        assert got[k] == v, (
+            f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        )
 
 
 async def test_register_invited_user_exception_handling(
@@ -96,9 +96,9 @@ async def test_register_invited_user_exception_handling(
         response = await async_client.post("/users", json=payload)
 
     # Verify the response status and content
-    assert (
-        response.status_code == 403
-    ), "Expected 403 Forbidden when an exception occurs in user creation"
+    assert response.status_code == 403, (
+        "Expected 403 Forbidden when an exception occurs in user creation"
+    )
     got = response.json()
     assert got.get("error").get("reason") == "Test Exception"
 
@@ -116,9 +116,9 @@ async def test_register_invited_user_exception_handling_invitation_not_found(
     response = await async_client.post("/users", json=payload)
 
     # Verify the response status and content
-    assert (
-        response.status_code == 403
-    ), "Expected 403 Forbidden when an exception occurs in user creation"
+    assert response.status_code == 403, (
+        "Expected 403 Forbidden when an exception occurs in user creation"
+    )
     got = response.json()
     assert (
         got.get("error")
@@ -148,9 +148,9 @@ async def test_register_invited_user_exception_handling_invitation_doesnot_exist
         response = await async_client.post("/users", json=payload)
 
     # Verify the response status and content
-    assert (
-        response.status_code == 403
-    ), "Expected 403 Forbidden when an exception occurs in user creation"
+    assert response.status_code == 403, (
+        "Expected 403 Forbidden when an exception occurs in user creation"
+    )
     got = response.json()
     assert got.get("error") == "Test Exception"
 
@@ -195,8 +195,8 @@ async def test_decline_invitation_handle_exception(
         )
 
     # Verify the response status and content
-    assert (
-        response.status_code == 403
-    ), "Expected 403 Forbidden when an exception occurs in user creation"
+    assert response.status_code == 403, (
+        "Expected 403 Forbidden when an exception occurs in user creation"
+    )
     got = response.json()
     assert got.get("error").get("reason") == "Test Exception"
