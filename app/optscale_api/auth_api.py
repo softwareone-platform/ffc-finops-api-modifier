@@ -92,8 +92,7 @@ class OptScaleAuth:
         if response.get("data", {}).get("user_id", 0) != user_id:
             unmatched_user_id = response.get("data", {}).get("user_id", 0)
             logger.error(
-                f"User ID mismatch: requested {user_id}, "
-                f"received {unmatched_user_id}"
+                f"User ID mismatch: requested {user_id}, received {unmatched_user_id}"
             )
             raise UserAccessTokenError("Access Token User ID mismatch")
         token = response.get("data", {}).get("token")

@@ -78,9 +78,9 @@ async def test_create_user_org(
     got = response
     want = test_data["org"]["case_create"]["response"]
     for k, v in want.items():
-        assert (
-            got[k] == v
-        ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        assert got[k] == v, (
+            f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
+        )
 
     # Assert that mock_post was called with expected arguments
     mock_api_client_post.assert_called_once_with(
@@ -107,9 +107,9 @@ async def test_create_user_org_with_invalid_currency(
         )
 
         assert result is None, "Expected None for invalid currency"
-        assert (
-            "Invalid currency: not valid currency" in caplog.text
-        ), "Expected error message for invalid currency"
+        assert "Invalid currency: not valid currency" in caplog.text, (
+            "Expected error message for invalid currency"
+        )
 
 
 async def test_get_user_org_with_no_token(
@@ -132,9 +132,9 @@ async def test_get_user_org_with_no_token(
                 auth_client=optscale_auth_api,
             )
     # Verify the log entry
-    assert (
-        "Failed to get an admin access token" in caplog.text
-    ), "Expected error log message for the exception"  # noqa: E501
+    assert "Failed to get an admin access token" in caplog.text, (
+        "Expected error log message for the exception"
+    )  # noqa: E501
 
 
 async def test_get_user_org_empty_response(
