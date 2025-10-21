@@ -32,6 +32,10 @@ class InvitationDoesNotExist(Exception):
     pass
 
 
+class CloudAccountNotAllowed(Exception):
+    pass
+
+
 class CloudAccountConfigError(Exception):
     pass
 
@@ -42,8 +46,8 @@ class AuthException(Exception):
         status_code: int,
         reason: str,
         error_code: str,
-        title: str = None,
-        params: list = None,
+        title: str | None = None,
+        params: list | None = None,
     ):  # noqa: E501
         if params is None:
             params = []
@@ -71,8 +75,8 @@ class APIResponseError(Exception):
         status_code: int,
         reason: str,
         error_code: str,
-        title: str = None,
-        params: list = None,
+        title: str | None = None,
+        params: list | None = None,
     ):  # noqa: E501
         if params is None:
             params = []

@@ -1,20 +1,10 @@
 import logging
-from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import AsyncClient
 
 from app.core.exceptions import APIResponseError
-from app.optscale_api.users_api import OptScaleUserAPI
 from tests.helpers.jwt import create_jwt_token
-
-
-@pytest.fixture
-def mock_create_user():
-    patcher = patch.object(OptScaleUserAPI, "create_user", new=AsyncMock())
-    mock = patcher.start()
-    yield mock
-    patcher.stop()
 
 
 @pytest.mark.parametrize(
