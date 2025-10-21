@@ -1,11 +1,9 @@
 import logging
-from unittest.mock import AsyncMock
 
 import pytest
 
 from app.api.invitations.services.invitations import remove_user, validate_user_delete
 from app.core.exceptions import APIResponseError
-from app.optscale_api.users_api import OptScaleUserAPI
 
 USER_ID = "f0bd0c4a-7c55-45b7-8b58-27740e38789a"
 ADMIN_API_KEY = "f2312f2b-46h0-4456-o0i9-58e64f2j6725"
@@ -14,80 +12,13 @@ DISPLAY_NAME = "Spider Man"
 PASSWORD = "With great power comes great responsibility"
 
 
-@pytest.fixture
-def optscale_api():
-    """Provides a clean instance of OptScaleUserAPI for each test."""
-    return OptScaleUserAPI()
-
-
-@pytest.fixture
-def mock_post(mocker, optscale_api):
-    """Mock the `post` method in `api_client`."""
-    mock_post = mocker.patch.object(optscale_api.api_client, "post", new=AsyncMock())
-    return mock_post
-
-
-@pytest.fixture
-def mock_delete(mocker, optscale_api):
-    """Mock the `post` method in `api_client`."""
-    mock_delete = mocker.patch.object(
-        optscale_api.api_client, "delete", new=AsyncMock()
-    )
-    return mock_delete
-
-
-@pytest.fixture
-def mock_invitation_api(mocker):
-    def _mock_invitation_api(return_value):
-        mock = AsyncMock()
-        mock.get_list_of_invitations.return_value = return_value
-        mocker.patch(
-            "app.optscale_api.invitation_api.OptScaleInvitationAPI", return_value=mock
-        )
-        return mock
-
-    return _mock_invitation_api
-
-
-@pytest.fixture
-def mock_org_api(mocker):
-    def _mock_org_api(return_value):
-        mock = AsyncMock()
-        mock.get_user_org_list.return_value = return_value
-        mocker.patch(
-            "app.optscale_api.orgs_api.OptScaleOrgAPI", return_value=mock_org_api
-        )
-        return mock
-
-    return _mock_org_api
-
-
-@pytest.fixture
-def mock_user_api(mocker):
-    def _mock_user_api(should_raise=False):
-        mock = AsyncMock()
-        if should_raise:
-            mock.delete_user.side_effect = APIResponseError(
-                title="Error response from OptScale",
-                reason="Test",
-                status_code=403,
-                error_code="test error code",
-            )
-        else:
-            mock.delete_user.return_value = None
-        mocker.patch("app.optscale_api.users_api.OptScaleUserAPI", return_value=mock)
-        return mock
-
-    return _mock_user_api
-
-
 async def test_register_invited_user_on_optscale(
-    caplog, optscale_api, test_data: dict, mock_post
+    caplog, optscale_api, test_data: dict, mock_optscale_api_post
 ):
     mock_response = test_data["user"]["case_create"]["response"]
     mock_response["data"]["verified"] = False
     mock_response["data"]["token"] = None
-    mock_post.return_value = mock_response
+    mock_optscale_api_post.return_value = mock_response
     result = await optscale_api.create_user(
         email=EMAIL,
         display_name=DISPLAY_NAME,
@@ -98,9 +29,11 @@ async def test_register_invited_user_on_optscale(
     assert result == mock_response, "Expected a valid user creation response"
 
 
-async def test_create_duplicate_user(caplog, optscale_api, test_data: dict, mock_post):
+async def test_create_duplicate_user(
+    caplog, optscale_api, test_data: dict, mock_optscale_api_post
+):
     mock_response = test_data["user"]["case_create"]["errors"]["409"]
-    mock_post.return_value = mock_response
+    mock_optscale_api_post.return_value = mock_response
     with caplog.at_level(logging.ERROR):
         with pytest.raises(  # noqa: PT012
             APIResponseError, match=""
@@ -111,7 +44,7 @@ async def test_create_duplicate_user(caplog, optscale_api, test_data: dict, mock
                 password=PASSWORD,
                 admin_api_key="test_key",
             )
-            mock_post.assert_called_once_with(
+            mock_optscale_api_post.assert_called_once_with(
                 endpoint="/users",
                 data={
                     "email": EMAIL,

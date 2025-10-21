@@ -1,30 +1,10 @@
 import logging
-from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import AsyncClient
 
 from app.core.exceptions import APIResponseError, UserAccessTokenError
-from app.optscale_api.orgs_api import OptScaleOrgAPI
 from tests.helpers.jwt import create_jwt_token
-
-
-@pytest.fixture
-def mock_get_org():
-    patcher = patch.object(
-        OptScaleOrgAPI, "access_user_org_list_with_admin_key", new=AsyncMock()
-    )
-    mock = patcher.start()
-    yield mock
-    patcher.stop()
-
-
-@pytest.fixture
-def mock_create_org():
-    patcher = patch.object(OptScaleOrgAPI, "create_user_org", new=AsyncMock())
-    mock = patcher.start()
-    yield mock
-    patcher.stop()
 
 
 async def test_create_org_no_authentication(async_client: AsyncClient, test_data: dict):
