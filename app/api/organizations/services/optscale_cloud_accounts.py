@@ -1,29 +1,31 @@
 import logging
 
-from app.api.cloud_account.cloud_accounts_manager import (
-    CloudStrategyConfiguration,
-    CloudStrategyManager,
-)
+from app.core.exceptions import CloudAccountNotAllowed
+from app.optscale_api.cloud_accounts import OptScaleCloudAccountAPI
 
 logger = logging.getLogger("__name__")
+ALLOWED_PROVIDERS = ["aws_cnr", "gcp_cnr", "azure_cnr", "azure_tenant"]
 
 
 async def link_cloud_account_to_org(
-    name: str,
-    type: str,
-    config: dict,
-    process_recommendations: bool,
-    auto_import: bool,
+    cloud_account_data: dict,
     org_id: str,
     user_access_token: str,
 ):
     """
 
-    :param name: The name of the Cloud Account
-    :param type:  One of the Cloud Account allowed types
-    :param config: The whole config of the given Cloud Account
-    :param process_recommendations: a value required by OptScale
-    :param auto_import: a value required by OptScale
+    :param cloud_account_data: The whole config of the given Cloud Account
+        {
+          "name":"Test2",
+          "type":"azure_tenasssssssssnt",
+          "config":{
+            "client_id":"cd945f4b-0554-4a16-9a09-96a2f30bc0ef",
+            "tenant":"1dc9b339-fadb-432e-86df-423c38a0fcb8",
+            "secret":"QOt8Q~r.ZkpDN1p2cFsYTCQFDtbB8pzzm6xxydlA"
+          },
+          "auto_import": false,
+          "process_recommendations": false
+        }
     :param org_id: The org ID to link the Cloud Account to
     :param user_access_token: The user's access token the org belongs to
     :return: If the given cloud account is linked, a dict like this one will be returned
@@ -57,23 +59,18 @@ async def link_cloud_account_to_org(
           Rethrow APIResponseError if an error occurred during the communication with the
           OptScale API.
     """
-    # Here the config as received is validated
-    cloud_account_config = CloudStrategyConfiguration(
-        name=name,
-        provider_type=type,
-        config=config,
-        process_recommendations=process_recommendations,
-        auto_import=auto_import,
-    )
 
-    # let's select the correct strategy for the given cloud account
-    cloud_account_strategy = cloud_account_config.select_strategy()
-    strategy_manager = CloudStrategyManager(strategy=cloud_account_strategy)
-    # here the conf will be processed in order to use the OptScale API
-    response = await strategy_manager.add_cloud_account(
-        config=cloud_account_config,
+    if cloud_account_data["type"] not in ALLOWED_PROVIDERS:
+        raise CloudAccountNotAllowed()
+    optscale_cloud_account_api = OptScaleCloudAccountAPI()
+    response = await optscale_cloud_account_api.link_cloud_account_with_org(
+        user_access_token=user_access_token,  # noqa: E501
         org_id=org_id,
-        user_access_token=user_access_token,
+        conf=cloud_account_data,
     )
-    logger.info(f"The Cloud Account {type} has been linked to the org {org_id}")
+    datasource_type = cloud_account_data["type"]
+
+    logger.info(
+        f"The Cloud Account {datasource_type} has been added to the org {org_id}"
+    )
     return response

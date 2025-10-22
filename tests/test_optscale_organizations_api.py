@@ -1,5 +1,4 @@
 import logging
-from unittest.mock import AsyncMock
 
 import pytest
 
@@ -8,71 +7,25 @@ from app.core.exceptions import (
     UserAccessTokenError,
     UserOrgCreationError,
 )
-from app.optscale_api.auth_api import OptScaleAuth
-from app.optscale_api.orgs_api import OptScaleOrgAPI
-
-
-@pytest.fixture
-def optscale_org_api_instance():
-    return OptScaleOrgAPI()
-
-
-@pytest.fixture
-def optscale_auth_api():
-    return OptScaleAuth()
-
-
-@pytest.fixture
-def mock_api_client_post(mocker, optscale_org_api_instance):
-    mock_post = mocker.patch.object(
-        optscale_org_api_instance.api_client, "post", new=AsyncMock()
-    )
-    return mock_post
-
-
-@pytest.fixture
-def mock_api_client_get(mocker, optscale_org_api_instance):
-    mock_get = mocker.patch.object(
-        optscale_org_api_instance.api_client, "get", new=AsyncMock()
-    )
-    return mock_get
-
-
-@pytest.fixture
-def mock_auth_token(mocker, optscale_auth_api):
-    mock_auth_token = mocker.patch.object(
-        optscale_auth_api,
-        "obtain_user_auth_token_with_admin_api_key",
-        return_value="good token",
-    )
-    return mock_auth_token
-
-
-@pytest.fixture
-def mock_invalid_auth_token(mocker, optscale_auth_api):
-    mock_auth_token = mocker.patch.object(
-        optscale_auth_api,
-        "obtain_user_auth_token_with_admin_api_key",
-        side_effect=UserAccessTokenError("Failed to get an admin access token"),
-    )
-    return mock_auth_token
 
 
 async def test_create_user_org(
-    optscale_org_api_instance,
-    mock_api_client_post,
+    optscale_org_api,
+    mock_optscale_org_api_post,
     mock_auth_token,
-    optscale_auth_api,
+    opt_scale_auth,
     test_data: dict,
 ):
-    mock_api_client_post.return_value = test_data["org"]["case_create"]["response"]
+    mock_optscale_org_api_post.return_value = test_data["org"]["case_create"][
+        "response"
+    ]
 
-    response = await optscale_org_api_instance.create_user_org(
+    response = await optscale_org_api.create_user_org(
         org_name="MyOrg",
         currency="USD",
         user_id="test_user",
         admin_api_key="test_key",
-        auth_client=optscale_auth_api,
+        auth_client=opt_scale_auth,
     )
 
     got = response
@@ -83,7 +36,7 @@ async def test_create_user_org(
         ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
 
     # Assert that mock_post was called with expected arguments
-    mock_api_client_post.assert_called_once_with(
+    mock_optscale_org_api_post.assert_called_once_with(
         endpoint="/organizations",
         data={"name": "MyOrg", "currency": "USD"},
         headers={"Authorization": "Bearer good token"},
@@ -92,18 +45,17 @@ async def test_create_user_org(
 
 async def test_create_user_org_with_invalid_currency(
     caplog,
-    optscale_org_api_instance,
-    mock_api_client_post,
+    optscale_org_api,
     mock_auth_token,
-    optscale_auth_api,
+    opt_scale_auth,
 ):
     with caplog.at_level(logging.ERROR):
-        result = await optscale_org_api_instance.create_user_org(
+        result = await optscale_org_api.create_user_org(
             org_name="Test Org",
             currency="not valid currency",
             user_id="test_user",
             admin_api_key="test_key",
-            auth_client=optscale_auth_api,
+            auth_client=opt_scale_auth,
         )
 
         assert result is None, "Expected None for invalid currency"
@@ -113,10 +65,9 @@ async def test_create_user_org_with_invalid_currency(
 
 
 async def test_get_user_org_with_no_token(
-    optscale_org_api_instance,
-    mock_api_client_post,
+    optscale_org_api,
     mock_invalid_auth_token,
-    optscale_auth_api,
+    opt_scale_auth,
     caplog,
 ):
     with caplog.at_level(logging.ERROR):
@@ -124,12 +75,12 @@ async def test_get_user_org_with_no_token(
             UserAccessTokenError,
             match="Failed to get an admin access token",
         ):
-            await optscale_org_api_instance.create_user_org(
+            await optscale_org_api.create_user_org(
                 org_name="MyOrg",
                 currency="USD",
                 user_id="test_user",
                 admin_api_key="test_key",
-                auth_client=optscale_auth_api,
+                auth_client=opt_scale_auth,
             )
     # Verify the log entry
     assert (
@@ -138,54 +89,56 @@ async def test_get_user_org_with_no_token(
 
 
 async def test_get_user_org_empty_response(
-    optscale_org_api_instance, mock_api_client_get, mock_auth_token, optscale_auth_api
+    optscale_org_api, mock_optscale_org_api_client_get, mock_auth_token, opt_scale_auth
 ):
-    mock_api_client_get.return_value = {"organizations": []}
-    result = await optscale_org_api_instance.access_user_org_list_with_admin_key(
-        user_id="test_user", admin_api_key="test_key", auth_client=optscale_auth_api
+    mock_optscale_org_api_client_get.return_value = {"organizations": []}
+    result = await optscale_org_api.access_user_org_list_with_admin_key(
+        user_id="test_user", admin_api_key="test_key", auth_client=opt_scale_auth
     )
     assert result == {"organizations": []}
-    mock_api_client_get.assert_called_once_with(
+    mock_optscale_org_api_client_get.assert_called_once_with(
         endpoint="/organizations",
         headers={"Authorization": "Bearer good token"},
     )
 
 
 async def test_get_user_org_response_error(
-    optscale_org_api_instance,
-    mock_api_client_get,
+    optscale_org_api,
+    mock_optscale_org_api_client_get,
     mock_auth_token,
-    optscale_auth_api,
+    opt_scale_auth,
     caplog,
 ):
-    mock_api_client_get.return_value = {
+    mock_optscale_org_api_client_get.return_value = {
         "error": "This is an error! ",
         "status_code": 403,
         "data": {"error": {"reason": "Oh no, I made a mistake!"}},
     }
     with caplog.at_level(logging.ERROR):
         with pytest.raises(APIResponseError):  # noqa: PT012
-            await optscale_org_api_instance.access_user_org_list_with_admin_key(
+            await optscale_org_api.access_user_org_list_with_admin_key(
                 user_id="test_user",
                 admin_api_key="test_key",
-                auth_client=optscale_auth_api,
+                auth_client=opt_scale_auth,
             )
 
 
 async def test_get_user_orgs_exceptions_handling(
-    optscale_org_api_instance,
-    mock_api_client_get,
+    optscale_org_api,
+    mock_optscale_org_api_client_get,
     mock_auth_token,
-    optscale_auth_api,
+    opt_scale_auth,
     caplog,
 ):
-    mock_api_client_get.side_effect = UserAccessTokenError("Access Token exception")
+    mock_optscale_org_api_client_get.side_effect = UserAccessTokenError(
+        "Access Token exception"
+    )
     with caplog.at_level(logging.ERROR):
         with pytest.raises(UserAccessTokenError, match="Access Token exception"):
-            await optscale_org_api_instance.access_user_org_list_with_admin_key(
+            await optscale_org_api.access_user_org_list_with_admin_key(
                 user_id="test_user",
                 admin_api_key="test_key",
-                auth_client=optscale_auth_api,
+                auth_client=opt_scale_auth,
             )
     # Verify the log entry
     assert (
@@ -193,13 +146,13 @@ async def test_get_user_orgs_exceptions_handling(
         in caplog.text
     ), "Expected error log message for the exception"  # noqa: E501
 
-    mock_api_client_get.side_effect = Exception("Generic Exception")
+    mock_optscale_org_api_client_get.side_effect = Exception("Generic Exception")
     with caplog.at_level(logging.ERROR):
         with pytest.raises(Exception, match="Generic Exception"):
-            await optscale_org_api_instance.access_user_org_list_with_admin_key(
+            await optscale_org_api.access_user_org_list_with_admin_key(
                 user_id="test_user",
                 admin_api_key="test_key",
-                auth_client=optscale_auth_api,
+                auth_client=opt_scale_auth,
             )
     # Verify the log entry
     assert (
@@ -209,22 +162,24 @@ async def test_get_user_orgs_exceptions_handling(
 
 
 async def test_create_org_access_token_exception_handling(
-    optscale_org_api_instance,
-    mock_api_client_post,
+    optscale_org_api,
+    mock_optscale_org_api_post,
     mock_auth_token,
-    optscale_auth_api,
+    opt_scale_auth,
     caplog,
 ):
     # Simulate a UserAccessTokenError exception  in `create_user_org`
-    mock_api_client_post.side_effect = UserAccessTokenError("Access Token exception")
+    mock_optscale_org_api_post.side_effect = UserAccessTokenError(
+        "Access Token exception"
+    )
     with caplog.at_level(logging.ERROR):
         with pytest.raises(UserAccessTokenError, match="Access Token exception"):
-            await optscale_org_api_instance.create_user_org(
+            await optscale_org_api.create_user_org(
                 org_name="MyOrg",
                 currency="USD",
                 user_id="test_user",
                 admin_api_key="test_key",
-                auth_client=optscale_auth_api,
+                auth_client=opt_scale_auth,
             )
     # Verify the log entry
     assert (
@@ -234,22 +189,24 @@ async def test_create_org_access_token_exception_handling(
 
 
 async def test_create_org_user_org_creation_exception_handling(
-    optscale_org_api_instance,
-    mock_api_client_post,
+    optscale_org_api,
+    mock_optscale_org_api_post,
     mock_auth_token,
-    optscale_auth_api,
+    opt_scale_auth,
     caplog,
 ):
     # Simulate a UserOrgCreationError exception  in `create_user_org`
-    mock_api_client_post.side_effect = UserOrgCreationError("Org Creation exception")
+    mock_optscale_org_api_post.side_effect = UserOrgCreationError(
+        "Org Creation exception"
+    )
     with caplog.at_level(logging.ERROR):
         with pytest.raises(UserOrgCreationError, match="Org Creation exception"):
-            await optscale_org_api_instance.create_user_org(
+            await optscale_org_api.create_user_org(
                 org_name="MyOrg",
                 currency="USD",
                 user_id="test_user",
                 admin_api_key="test_key",
-                auth_client=optscale_auth_api,
+                auth_client=opt_scale_auth,
             )
     # Verify the log entry
     assert (
@@ -275,47 +232,47 @@ async def test_create_org_user_org_creation_exception_handling(
     ],
 )
 async def test_create_org_user_exception_handling(
-    optscale_org_api_instance,
-    mock_api_client_post,
+    optscale_org_api,
+    mock_optscale_org_api_post,
     mock_auth_token,
-    optscale_auth_api,
+    opt_scale_auth,
     caplog,
     side_effect,
     expected_exception,
     expected_message,
 ):
-    mock_api_client_post.side_effect = side_effect
+    mock_optscale_org_api_post.side_effect = side_effect
     with caplog.at_level(logging.ERROR):
         with pytest.raises(expected_exception, match=str(side_effect)):
-            await optscale_org_api_instance.create_user_org(
+            await optscale_org_api.create_user_org(
                 org_name="MyOrg",
                 currency="USD",
                 user_id="test_user",
                 admin_api_key="test_key",
-                auth_client=optscale_auth_api,
+                auth_client=opt_scale_auth,
             )
     assert any(expected_message in record.message for record in caplog.records)
 
 
 async def test_create_org_user_response_error(
-    optscale_org_api_instance,
-    mock_api_client_post,
+    optscale_org_api,
+    mock_optscale_org_api_post,
     mock_auth_token,
-    optscale_auth_api,
+    opt_scale_auth,
     caplog,
 ):
-    mock_api_client_post.return_value = {
+    mock_optscale_org_api_post.return_value = {
         "status_code": 403,
         "error": "Invalid JSON format in response",
     }
     with caplog.at_level(logging.ERROR):
         with pytest.raises(APIResponseError) as exc_info:
-            await optscale_org_api_instance.create_user_org(
+            await optscale_org_api.create_user_org(
                 org_name="MyOrg",
                 currency="USD",
                 user_id="test_user",
                 admin_api_key="test_key",
-                auth_client=optscale_auth_api,
+                auth_client=opt_scale_auth,
             )
 
         exception = exc_info.value

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from fastapi import status as http_status
 
@@ -45,7 +46,7 @@ class OptScaleInvitationAPI:
 
     async def get_list_of_invitations(
         self, user_access_token: str | None = None, email: str | None = None
-    ) -> dict[str, list[dict[str, any]]] | Exception:
+    ) -> dict[str, list[dict[str, Any]]] | Exception:
         """
         It returns a list of invitations
         :param email: if provided, the invitation will be searched using the email address and

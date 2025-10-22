@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, EmailStr, constr
+from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, EmailStr, StringConstraints
 
 
 class RegisterInvitedUser(BaseModel):
     email: EmailStr
     display_name: str
-    password: constr(min_length=8)
+    password: Annotated[str, StringConstraints(min_length=8)]
     model_config = ConfigDict(
         json_schema_extra={
             "example": [

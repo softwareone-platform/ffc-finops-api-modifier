@@ -1,50 +1,9 @@
 import logging
-from unittest.mock import AsyncMock, patch
 
-import pytest
 from httpx import AsyncClient
 
 from app.core.exceptions import APIResponseError, InvitationDoesNotExist
-from app.optscale_api.auth_api import OptScaleAuth
-from app.optscale_api.invitation_api import OptScaleInvitationAPI
-from app.optscale_api.users_api import OptScaleUserAPI
 from tests.helpers.jwt import create_jwt_token
-
-
-@pytest.fixture
-def mock_register_invited():
-    patcher = patch.object(OptScaleUserAPI, "create_user", new=AsyncMock())
-    mock = patcher.start()
-    yield mock
-    patcher.stop()
-
-
-@pytest.fixture
-def mock_decline_invitation():
-    patcher = patch.object(OptScaleInvitationAPI, "decline_invitation", new=AsyncMock())
-    mock = patcher.start()
-    yield mock
-    patcher.stop()
-
-
-@pytest.fixture
-def mock_get_list_of_invitations():
-    patcher = patch.object(
-        OptScaleInvitationAPI, "get_list_of_invitations", new=AsyncMock()
-    )  # noqa: E501
-    mock = patcher.start()
-    yield mock
-    patcher.stop()
-
-
-@pytest.fixture
-def mock_optscale_auth_post():
-    patcher = patch.object(
-        OptScaleAuth, "obtain_user_auth_token_with_admin_api_key", new=AsyncMock()
-    )  # noqa: E501
-    mock = patcher.start()
-    yield mock
-    patcher.stop()
 
 
 async def test_register_invited_user(
