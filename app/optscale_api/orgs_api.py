@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from app import settings
 from app.core.api_client import APIClient
@@ -31,7 +32,7 @@ class OptScaleOrgAPI:
 
     async def get_user_org_list(
         self, user_access_token: str
-    ) -> dict[str, list[dict[str, any]]] | Exception:  # noqa: E501
+    ) -> dict[str, list[dict[str, Any]]] | Exception:  # noqa: E501
         """
         It returns a list of the organizations the user owns, identified by the given
         user_access_token.

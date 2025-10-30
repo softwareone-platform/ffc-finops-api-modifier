@@ -1,27 +1,17 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from httpx import Headers, HTTPStatusError, Request, RequestError, Response
+from httpx import Headers, HTTPStatusError, RequestError, Response
 
 from app.core.api_client import APIClient
 
 
-@pytest.fixture
-def api_client():
-    return APIClient(base_url="http://testserver")
-
-
-@pytest.fixture
-def mock_request_instance():
-    return Request(method="GET", url="http://testserver/endpoint")
-
-
 @patch("httpx.AsyncClient.request")
-async def test_make_request_success(mock_request, api_client, mock_request_instance):
+async def test_make_request_success(mock_request, api_client, async_client):
     """Test a successful JSON response."""
     mock_response = Response(
         status_code=200,
-        request=mock_request_instance,
+        request=async_client.request,
         headers=Headers({"Content-Type": "application/json"}),
         json={"key": "value"},
     )
@@ -33,24 +23,20 @@ async def test_make_request_success(mock_request, api_client, mock_request_insta
 
 
 @patch("httpx.AsyncClient.request")
-async def test_make_request_204_success(
-    mock_request, api_client, mock_request_instance
-):
+async def test_make_request_204_success(mock_request, api_client, async_client):
     """Test a successful JSON response."""
-    mock_response = Response(status_code=204, request=mock_request_instance)
+    mock_response = Response(status_code=204, request=async_client.request)
     mock_request.return_value = mock_response
     response = await api_client._make_request("GET", "/endpoint")
     assert response == {}
 
 
 @patch("httpx.AsyncClient.request")
-async def test_make_request_plain_text_response(
-    mock_request, api_client, mock_request_instance
-):
+async def test_make_request_plain_text_response(mock_request, api_client, async_client):
     """Test handling of non-JSON responses."""
     mock_response = Response(
         status_code=200,
-        request=mock_request_instance,
+        request=async_client.request,
         headers=Headers({"Content-Type": "text/plain"}),
     )
 
@@ -62,12 +48,12 @@ async def test_make_request_plain_text_response(
 
 @patch("httpx.AsyncClient.request")
 async def test_make_request_json_value_error_response(
-    mock_request, api_client, mock_request_instance
+    mock_request, api_client, async_client
 ):
     """Test handling of non-JSON responses."""
     mock_response = Response(
         status_code=200,
-        request=mock_request_instance,
+        request=async_client.request,
         headers=Headers({"Content-Type": "application/json"}),
     )
 
@@ -84,11 +70,9 @@ async def test_make_request_json_value_error_response(
 
 
 @patch("httpx.AsyncClient.request")
-async def test_make_request_http_request_error(
-    mock_request, api_client, mock_request_instance
-):
+async def test_make_request_http_request_error(mock_request, api_client, async_client):
     mock_request.side_effect = RequestError(
-        "Connection failed", request=mock_request_instance
+        "Connection failed", request=async_client.request
     )
     response = await api_client._make_request("GET", "/endpoint")
 
@@ -98,20 +82,18 @@ async def test_make_request_http_request_error(
 
 
 @patch("httpx.AsyncClient.request")
-async def test_make_request_http_status_error(
-    mock_request, api_client, mock_request_instance
-):
+async def test_make_request_http_status_error(mock_request, api_client, async_client):
     # Create a mock Response object
     mock_response = Response(
         status_code=404,
-        request=mock_request_instance,
+        request=async_client.request,
         headers={"Content-Type": "application/json"},
         json={"detail": "Not Found"},
     )
     # Simulate raising an HTTPStatusError
     mock_request.side_effect = HTTPStatusError(
         message="HTTP error",
-        request=mock_request_instance,
+        request=async_client.request,
         response=mock_response,
     )
 
@@ -123,10 +105,10 @@ async def test_make_request_http_status_error(
 
 
 @patch("httpx.AsyncClient.request")
-async def test_make_request_generic_exception_logging(mock_request, caplog, api_client):
+async def test_make_request_generic_exception_logging(async_client, caplog, api_client):
     """Test logging of generic exceptions."""
     # Simulate raising a generic Exception
-    mock_request.side_effect = Exception("Something went wrong")
+    async_client.side_effect = Exception("Something went wrong")
 
     # Perform the request with logging enabled
     with caplog.at_level("ERROR"):

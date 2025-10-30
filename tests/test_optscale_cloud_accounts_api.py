@@ -1,35 +1,20 @@
 import logging
-from unittest.mock import AsyncMock
 
 import pytest
 
 from app.core.exceptions import APIResponseError
-from app.optscale_api.cloud_accounts import OptScaleCloudAccountAPI
-
-
-@pytest.fixture
-def optscale_cloud_account_api_instance():
-    return OptScaleCloudAccountAPI()
-
-
-@pytest.fixture
-def mock_api_client_post(mocker, optscale_cloud_account_api_instance):
-    mock_post = mocker.patch.object(
-        optscale_cloud_account_api_instance.api_client, "post", new=AsyncMock()
-    )
-    return mock_post
 
 
 async def test_create_cloud_account(
-    optscale_cloud_account_api_instance,
-    mock_api_client_post,
+    optscale_cloud_account_api,
+    mock_optscale_cloud_account_api_post_method,
     test_data: dict,
 ):
-    mock_api_client_post.return_value = test_data["cloud_accounts_conf"]["create"][
-        "data"
-    ]["azure"]["response"]  # noqa: E501
+    mock_optscale_cloud_account_api_post_method.return_value = (test_data)[
+        "cloud_accounts_conf"
+    ]["create"]["data"]["azure"]["response"]
     payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
-    response = await optscale_cloud_account_api_instance.link_cloud_account_with_org(
+    response = await optscale_cloud_account_api.link_cloud_account_with_org(
         user_access_token="good token", org_id="ABC-101-DEF-1001", conf=payload
     )
 
@@ -41,7 +26,7 @@ async def test_create_cloud_account(
         ), f"Mismatch in response for key '{k}': expected {v}, got {got[k]}"
 
     # Assert that mock_post was called with expected arguments
-    mock_api_client_post.assert_called_once_with(
+    mock_optscale_cloud_account_api_post_method.assert_called_once_with(
         endpoint="/organizations/ABC-101-DEF-1001/cloud_accounts",
         data=payload,
         headers={"Authorization": "Bearer good token"},
@@ -49,9 +34,12 @@ async def test_create_cloud_account(
 
 
 async def test_account_already_exists(
-    optscale_cloud_account_api_instance, mock_api_client_post, test_data: dict, caplog
+    optscale_cloud_account_api,
+    mock_optscale_cloud_account_api_post_method,
+    test_data: dict,
+    caplog,
 ):
-    mock_api_client_post.return_value = {
+    mock_optscale_cloud_account_api_post_method.return_value = {
         "error": {
             "status_code": 409,
             "error_code": "OE0402",
@@ -62,6 +50,6 @@ async def test_account_already_exists(
     payload = test_data["cloud_accounts_conf"]["create"]["data"]["azure"]["conf"]
     with caplog.at_level(logging.ERROR):
         with pytest.raises(APIResponseError):
-            await optscale_cloud_account_api_instance.link_cloud_account_with_org(
+            await optscale_cloud_account_api.link_cloud_account_with_org(
                 user_access_token="good token", org_id="ABC-101-DEF-1001", conf=payload
             )

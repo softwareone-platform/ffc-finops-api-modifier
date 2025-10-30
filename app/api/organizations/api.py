@@ -117,17 +117,13 @@ async def link_cloud_account(
     try:
         # here, we need to validate the bearer token to ensure that any authorization
         # related errors will be checked first. In case of an invalid/expired token,
-        # an APIResponseError with a http statu 401 will re raised
+        # an APIResponseError with an http status 401 will be raised
 
         await auth_client.check_user_allowed_to_create_cloud_account(
             bearer_token=user_access_token, org_id=org_id
         )
         response = await link_cloud_account_to_org(
-            name=data.name,
-            type=data.type,
-            config=data.config,
-            process_recommendations=data.process_recommendations,
-            auto_import=data.auto_import,
+            cloud_account_data=data.model_dump(),
             org_id=org_id,
             user_access_token=user_access_token,
         )
